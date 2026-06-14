@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekly Meal Planner · Perfectly Apped</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#2E7D73;--panel:#FFF2E1;--header:#F27C38;--mustard:#F4C542;--green:#A6D76A;--pink:#FF69B4;--dark:#1A1A1A;--muted:#7A7A6A;--yes:#44cc66;--no:#e07070;}
+body{background:var(--bg);color:#2A2A1A;font-family:'DM Sans',sans-serif;line-height:1.6;padding:20px 16px 60px;}
+h1,h2,h3,h4{font-family:'Fredoka One',cursive;font-weight:400;}
+.app-header{background:var(--header);border-radius:18px;padding:28px 24px 22px;margin:0 auto 22px;max-width:900px;box-shadow:0 6px 0 rgba(0,0,0,0.18);border:3px solid rgba(255,255,255,0.25);text-align:center;position:relative;overflow:hidden;}
+.app-header::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:rgba(244,197,66,0.25);border-radius:50%;}
+.app-header::after{content:'';position:absolute;bottom:-20px;left:-20px;width:80px;height:80px;background:rgba(255,105,180,0.2);border-radius:50%;}
+.app-header h1{color:#fff;font-size:clamp(1.8rem,5vw,2.8rem);text-shadow:2px 3px 0 rgba(0,0,0,0.15);margin-bottom:6px;position:relative;z-index:1;}
+.app-header p{color:rgba(255,255,255,0.92);font-size:0.97rem;position:relative;z-index:1;}
+.main-wrap{max-width:900px;margin:0 auto;}
+.tab-bar{display:flex;gap:7px;margin-bottom:18px;flex-wrap:wrap;}
+.tab-btn{background:rgba(255,255,255,0.15);color:#fff;border:2px solid rgba(255,255,255,0.3);border-radius:10px;font-family:'Fredoka One',cursive;font-size:0.88rem;padding:8px 14px;cursor:pointer;transition:all 0.18s;}
+.tab-btn.active{background:var(--panel);color:var(--dark);border-color:var(--green);}
+.tab-btn:hover:not(.active){background:rgba(255,255,255,0.25);}
+.card{background:var(--panel);border:3px solid var(--green);border-radius:14px;box-shadow:0 5px 0 rgba(0,0,0,0.1);padding:20px;margin-bottom:14px;}
+.section-head{background:var(--header);border-radius:11px 11px 0 0;padding:12px 20px;margin:-20px -20px 16px -20px;}
+.section-head h2{color:#fff;font-size:1.25rem;text-shadow:1px 2px 0 rgba(0,0,0,0.12);}
+.section-head p{color:rgba(255,255,255,0.88);font-size:0.84rem;margin-top:2px;}
+.btn-pink{background:var(--pink);color:#fff;border:none;border-radius:10px;font-family:'Fredoka One',cursive;font-size:1rem;padding:11px 22px;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,0.15);transition:all 0.18s;display:inline-block;}
+.btn-pink:hover{background:var(--mustard);color:var(--dark);transform:translateY(-2px);}
+.btn-green{background:transparent;color:var(--dark);border:2px solid var(--green);border-radius:10px;font-family:'Fredoka One',cursive;font-size:0.92rem;padding:9px 18px;cursor:pointer;transition:all 0.18s;display:inline-block;}
+.btn-green:hover{background:var(--green);color:var(--dark);transform:translateY(-2px);}
+input,select,textarea{background:#fff;color:var(--dark);border:2px solid var(--green);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.92rem;padding:8px 11px;width:100%;outline:none;transition:border-color 0.15s;}
+input:focus,select:focus,textarea:focus{border-color:var(--pink);box-shadow:0 0 0 3px rgba(255,105,180,0.15);}
+input::placeholder,textarea::placeholder{color:#bbb;}
+label{display:block;font-size:0.82rem;font-weight:700;color:#555;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px;}
+.field-hint{font-size:0.78rem;color:#888;font-style:italic;margin-top:3px;}
+.field-group{margin-bottom:14px;}
+.day-card{border-radius:12px;overflow:hidden;border:2px solid var(--green);box-shadow:0 4px 0 rgba(0,0,0,0.08);margin-bottom:10px;}
+.day-header{padding:10px 16px;display:flex;align-items:center;justify-content:space-between;}
+.day-name{font-family:'Fredoka One',cursive;font-size:1.1rem;}
+.day-body{background:#FFF2E1;padding:10px 14px;}
+.meal-row{display:flex;align-items:flex-start;gap:8px;padding:6px 8px;border-radius:8px;margin-bottom:5px;transition:opacity 0.2s;}
+.meal-row:last-child{margin-bottom:0;}
+.meal-row.skipped{opacity:0.35;pointer-events:none;}
+.meal-row.skipped .skip-toggle{pointer-events:all!important;}
+.meal-row.skipped .meal-label{text-decoration:line-through;}
+.meal-label-wrap{width:88px;flex:none;display:flex;align-items:center;gap:4px;padding-top:8px;}
+.meal-label{font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
+.skip-toggle{background:none;border:none;cursor:pointer;font-size:0.85rem;padding:0 2px;line-height:1;color:var(--muted);transition:color 0.15s;pointer-events:all!important;flex:none;}
+.skip-toggle:hover{color:var(--pink);}
+.meal-main{flex:1;min-width:0;}
+.meal-input-row{display:flex;gap:5px;align-items:center;}
+.meal-input-row input{flex:1;}
+.icon-btn{background:none;border:none;cursor:pointer;font-size:0.95rem;padding:5px 5px;border-radius:6px;transition:background 0.15s;line-height:1;flex:none;}
+.icon-btn:hover{background:rgba(0,0,0,0.07);}
+.recipe-link{display:inline-block;font-size:0.73rem;color:var(--bg);text-decoration:none;margin-top:3px;font-weight:700;}
+.recipe-link:hover{text-decoration:underline;}
+.nut-bar{display:flex;gap:4px;margin-top:5px;}
+.nut-btn{flex:1;background:#fff;border:1.5px solid #ddd;border-radius:6px;padding:3px;text-align:center;cursor:pointer;font-size:0.68rem;font-weight:700;color:#aaa;transition:all 0.15s;}
+.nut-btn.nl{border-color:#A6D76A;background:rgba(166,215,106,0.12);color:#447722;}
+.nut-btn.nm{border-color:var(--mustard);background:rgba(244,197,66,0.12);color:#886600;}
+.nut-btn.nh{border-color:var(--header);background:rgba(242,124,56,0.12);color:#993300;}
+.extras-row{margin-top:5px;padding:5px 8px;background:rgba(166,215,106,0.1);border-radius:8px;border:1.5px dashed rgba(166,215,106,0.6);}
+.extras-row label{font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;font-weight:700;margin-bottom:2px;}
+.extras-input{background:#fff;border:1.5px solid var(--green);border-radius:7px;font-size:0.82rem;padding:5px 9px;width:100%;}
+.extras-input:focus{border-color:var(--pink);}
+.lft-badge{font-size:0.68rem;background:var(--mustard);color:var(--dark);padding:2px 8px;border-radius:10px;font-weight:700;}
+.suggest-panel{background:#fff;border:2px solid var(--green);border-radius:10px;padding:10px 12px;margin-top:6px;display:none;}
+.suggest-panel.open{display:block;}
+.chips-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px;}
+.chip{background:#f5f5f5;border:1.5px solid var(--green);border-radius:20px;font-size:0.78rem;padding:4px 11px;cursor:pointer;transition:all 0.15s;color:var(--dark);}
+.chip:hover{background:var(--green);}
+.fav-chip{background:#fff0f7;border:1.5px solid var(--pink);border-radius:20px;font-size:0.78rem;padding:4px 11px;cursor:pointer;transition:all 0.15s;color:var(--dark);}
+.fav-chip:hover{background:var(--pink);color:#fff;}
+.fav-nudge{background:rgba(244,197,66,0.18);border:1.5px solid var(--mustard);border-radius:8px;padding:7px 10px;font-size:0.78rem;color:#664400;margin-top:7px;display:none;}
+.fav-nudge a{color:var(--bg);font-weight:700;cursor:pointer;text-decoration:underline;}
+.theme-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px;margin-top:10px;}
+.theme-card{background:#fff;border:2px solid var(--green);border-radius:12px;padding:12px;cursor:pointer;transition:all 0.18s;text-align:center;}
+.theme-card:hover,.theme-card.sel{border-color:var(--pink);background:rgba(255,105,180,0.06);}
+.theme-icon{font-size:1.7rem;margin-bottom:4px;}
+.theme-name{font-family:'Fredoka One',cursive;font-size:0.88rem;color:var(--dark);}
+.theme-desc{font-size:0.7rem;color:var(--muted);margin-top:2px;}
+.shop-section{margin-bottom:16px;}
+.shop-section-head{font-family:'Fredoka One',cursive;font-size:1rem;color:var(--dark);padding-bottom:5px;border-bottom:2px dashed rgba(166,215,106,0.5);margin-bottom:8px;}
+.shop-item{display:flex;align-items:center;gap:8px;padding:4px 2px;font-size:0.88rem;}
+.shop-item input[type=checkbox]{width:17px;height:17px;flex:none;cursor:pointer;accent-color:var(--pink);}
+.shop-item.done span{text-decoration:line-through;color:var(--muted);}
+.shop-item .del-btn{background:none;border:none;cursor:pointer;color:#ccc;font-size:0.85rem;padding:0 4px;margin-left:auto;transition:color 0.15s;flex:none;}
+.shop-item .del-btn:hover{color:var(--no);}
+.add-item-row{display:flex;gap:8px;margin-top:8px;}
+.add-item-row input{flex:1;}
+.snack-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:10px;}
+.snack-card{background:#fff;border:2px solid var(--green);border-radius:12px;padding:14px;transition:all 0.18s;}
+.snack-card:hover{border-color:var(--pink);box-shadow:0 4px 0 rgba(255,105,180,0.15);}
+.snack-name{font-family:'Fredoka One',cursive;font-size:0.95rem;color:var(--dark);margin-bottom:4px;}
+.snack-desc{font-size:0.78rem;color:var(--muted);margin-bottom:8px;}
+.snack-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;}
+.snack-tag{font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:10px;background:rgba(166,215,106,0.2);color:#446600;border:1px solid rgba(166,215,106,0.5);}
+.snack-add-btn{background:var(--green);color:var(--dark);border:none;border-radius:7px;font-family:'Fredoka One',cursive;font-size:0.82rem;padding:5px 12px;cursor:pointer;transition:all 0.15s;width:100%;}
+.rotate-hint{display:none;background:var(--mustard);color:var(--dark);border-radius:12px;padding:10px 16px;margin:0 auto 14px;max-width:900px;font-size:0.85rem;font-weight:700;text-align:center;align-items:center;justify-content:center;gap:8px;}
+@media (max-width:640px) and (orientation:portrait){.rotate-hint{display:flex;}}
+.snack-add-btn.added{background:var(--mustard);}
+.snack-filters{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;}
+.snack-filter{background:#fff;color:var(--dark);border:2px solid var(--green);border-radius:20px;padding:5px 14px;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.15s;}
+.snack-filter:hover{background:var(--green);}
+.snack-filter.active{background:var(--pink);color:#fff;border-color:var(--pink);}
+.fav-list{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
+.fav-item{background:#fff;border:2px solid var(--green);border-radius:10px;padding:12px 14px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.fav-item-info{flex:1;}
+.fav-item-name{font-family:'Fredoka One',cursive;font-size:1rem;color:var(--dark);}
+.fav-item-meta{font-size:0.78rem;color:var(--muted);margin-top:2px;}
+.fav-item-notes{font-size:0.82rem;color:#556;margin-top:4px;font-style:italic;}
+.fav-item-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:flex-start;}
+.cat-badge{font-size:0.65rem;font-weight:700;padding:3px 9px;border-radius:12px;display:inline-block;margin-top:3px;}
+.cat-breakfast{background:#fff3cd;color:#856404;border:1px solid #ffc107;}
+.cat-lunch{background:#d1ecf1;color:#0c5460;border:1px solid #bee5eb;}
+.cat-dinner{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb;}
+.cat-any{background:#e2d9f3;color:#4a1986;border:1px solid #c3aee0;}
+.prep-item{display:flex;gap:10px;padding:9px 0;border-bottom:1px dashed rgba(166,215,106,0.4);}
+.prep-item:last-child{border-bottom:none;}
+.prep-num{width:26px;height:26px;background:var(--green);color:var(--dark);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:0.85rem;flex:none;margin-top:1px;}
+.prep-meta{font-size:0.75rem;color:var(--muted);margin-top:2px;}
+.prefs-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:540px){.prefs-grid{grid-template-columns:1fr;}}
+.check-group{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px;}
+.check-chip{background:#fff;border:2px solid var(--green);border-radius:20px;padding:5px 12px;font-size:0.82rem;cursor:pointer;transition:all 0.15s;color:var(--dark);font-weight:600;user-select:none;}
+.check-chip.on{background:var(--pink);border-color:var(--pink);color:#fff;}
+.week-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.week-label{font-family:'Fredoka One',cursive;font-size:1.1rem;color:#fff;}
+.prog-wrap{background:rgba(255,255,255,0.15);border-radius:20px;height:10px;margin-bottom:4px;}
+.prog-fill{background:var(--mustard);height:10px;border-radius:20px;transition:width 0.4s;}
+.prog-label{font-size:0.78rem;color:rgba(255,255,255,0.8);margin-bottom:14px;}
+.alert{border-radius:10px;padding:11px 15px;font-size:0.87rem;margin-bottom:12px;display:flex;align-items:flex-start;gap:8px;}
+.alert-ok{background:rgba(166,215,106,0.18);border:2px solid var(--green);color:#335500;}
+.alert-info{background:rgba(244,197,66,0.13);border:2px solid var(--mustard);color:#664400;}
+.action-row{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px;}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;align-items:center;justify-content:center;padding:16px;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--panel);border:3px solid var(--green);border-radius:18px;padding:24px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,0.3);}
+.modal h3{font-family:'Fredoka One',cursive;font-size:1.3rem;margin-bottom:14px;}
+.empty-state{text-align:center;padding:30px 20px;color:var(--muted);}
+.empty-state div{font-size:2.5rem;margin-bottom:10px;}
+footer{text-align:center;font-size:0.82rem;color:rgba(255,255,255,0.65);padding:30px 16px 10px;margin-top:8px;}
+.hidden{display:none!important;}
+@media(max-width:500px){#previewGrid{grid-template-columns:1fr!important;}}
+</style>
+</head>
+<body>
+<div class="main-wrap">
+<header class="app-header">
+  <h1>🍽️ Weekly Meal Planner</h1>
+  <p>Smart suggestions · Themes · Shopping list · Snack ideas · Favorites · Prep day planner · 100% private, nothing leaves your browser</p>
+</header>
+<div class="prog-wrap"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+<div class="prog-label" id="progLabel">0 of 21 meals planned this week</div>
+<div class="week-nav">
+  <button class="btn-green" onclick="shiftWeek(-1)">← Previous</button>
+  <span class="week-label" id="weekLabel">This Week</span>
+  <button class="btn-green" onclick="shiftWeek(1)">Next →</button>
+</div>
+<div class="rotate-hint">📱➡️📱 Tip: rotate your phone to landscape for the best view</div>
+<div class="tab-bar">
+  <button class="tab-btn active" id="tbPlanner" onclick="openTab('planner',this)">📅 Planner</button>
+  <button class="tab-btn" onclick="openTab('themes',this)">✨ Themes</button>
+  <button class="tab-btn" onclick="openTab('shopping',this)">🛒 Shopping</button>
+  <button class="tab-btn" onclick="openTab('snacks',this)">🍿 Snacks</button>
+  <button class="tab-btn" onclick="openTab('favorites',this)">⭐ Favorites</button>
+  <button class="tab-btn" onclick="openTab('prep',this)">👩‍🍳 Prep Day</button>
+  <button class="tab-btn" onclick="openTab('profile',this)">⚙️ Profile</button>
+</div>
+
+<!-- PLANNER -->
+<div class="tab-content active" id="tab-planner">
+  <div class="card">
+    <div class="section-head"><h2>✨ Smart Meal Suggestions</h2><p>Instant, personalized, totally private — nothing leaves your browser</p></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+      <div style="flex:1;min-width:200px;">
+        <label>What sounds good this week? <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+        <input type="text" id="moodInput" placeholder="e.g. comfort food, quick meals, no-cook, Italian..." />
+        <div class="field-hint">Leave blank to use your saved profile preferences</div>
+      </div>
+      <button class="btn-pink" onclick="generateWeek()">✨ Suggest My Week</button>
+    </div>
+    <div id="genAlert" class="hidden" style="margin-top:10px;"></div>
+  </div>
+  <div class="card">
+    <div class="section-head"><h2>📅 Your Week</h2>
+      <p>－ skips a meal · 💡 suggests options · ⭐ swaps a favorite · 🔗 saves a recipe link</p>
+    </div>
+    <div id="dayGrid"></div>
+    <div class="action-row">
+      <button class="btn-pink" onclick="copyWeek()">📋 Copy Week</button>
+      <button class="btn-green" onclick="loadPrevWeek()">↩️ Load Last Week</button>
+      <button class="btn-green" onclick="clearWeek()">🗑️ Clear Week</button>
+    </div>
+  </div>
+</div>
+
+<!-- THEMES -->
+<div class="tab-content" id="tab-themes">
+  <div class="card">
+    <div class="section-head"><h2>✨ Weekly Themes</h2><p>Pick a vibe — your whole week populates instantly</p></div>
+    <div class="theme-grid" id="themeGrid"></div>
+    <div id="themeAlert" class="alert alert-ok hidden" style="margin-top:14px;"></div>
+  </div>
+</div>
+
+<!-- SHOPPING -->
+<div class="tab-content" id="tab-shopping">
+  <div class="card">
+    <div class="section-head"><h2>🛒 Shopping List</h2><p>Ingredients from your meal plan + anything you've added — edit, check off, copy and go</p></div>
+    <div id="shopState">
+      <div class="alert alert-info">Plan some meals first, then generate your list. Extra items you've typed into meal rows appear here too.</div>
+      <button class="btn-pink" onclick="buildShopList()">🛒 Generate My List</button>
+    </div>
+    <div id="shopListWrap" class="hidden">
+      <div id="shopList"></div>
+      <div style="margin-top:14px;padding-top:14px;border-top:2px dashed rgba(166,215,106,0.4);">
+        <label>Add anything else</label>
+        <div class="field-hint" style="margin-bottom:6px;">Paper towels, pet food, toiletries — whatever you need</div>
+        <div class="add-item-row">
+          <input type="text" id="customItemInput" placeholder="e.g. paper towels, dog food, toothpaste..." onkeydown="if(event.key==='Enter')addCustomItem()" />
+          <button class="btn-pink" style="white-space:nowrap;padding:10px 16px;" onclick="addCustomItem()">+ Add</button>
+        </div>
+      </div>
+      <div class="action-row">
+        <button class="btn-pink" onclick="copyShopList()">📋 Copy List</button>
+        <button class="btn-green" onclick="clearCheckedItems()">✅ Remove Checked</button>
+        <button class="btn-green" onclick="buildShopList()">🔄 Regenerate</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="section-head"><h2>🫙 Pantry Staples</h2><p>Check off what you have — these get excluded from your list</p></div>
+    <div id="pantryUI"></div>
+  </div>
+</div>
+
+<!-- SNACKS -->
+<div class="tab-content" id="tab-snacks">
+  <div class="card">
+    <div class="section-head"><h2>🍿 Snack Ideas</h2><p>Browse, filter, and add ingredients straight to your shopping list — no planning required</p></div>
+    <div class="snack-filters" id="snackFilters"></div>
+    <div id="snackAddedAlert" class="alert alert-ok hidden">✅ Ingredients added to your shopping list!</div>
+    <div class="snack-grid" id="snackGrid"></div>
+  </div>
+</div>
+
+<!-- FAVORITES -->
+<div class="tab-content" id="tab-favorites">
+  <div class="card">
+    <div class="section-head"><h2>⭐ My Favorites</h2><p>Save meals you love — swap them in from any meal slot using the ⭐ button</p></div>
+    <div style="background:#fff8ef;border:2px solid var(--mustard);border-radius:10px;padding:14px;margin-bottom:16px;">
+      <div style="font-family:'Fredoka One',cursive;font-size:1rem;margin-bottom:10px;color:var(--dark);">+ Add a Favorite</div>
+      <div class="prefs-grid" style="gap:10px;">
+        <div class="field-group" style="margin-bottom:0;">
+          <label>Meal Name</label>
+          <input type="text" id="favName" placeholder="e.g. Mom's Lasagna, That ramen place bowl..." />
+        </div>
+        <div class="field-group" style="margin-bottom:0;">
+          <label>Category</label>
+          <select id="favCat">
+            <option value="any">Any meal</option>
+            <option value="breakfast">Breakfast</option>
+            <option value="lunch">Lunch</option>
+            <option value="dinner">Dinner</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-group" style="margin-top:10px;margin-bottom:10px;">
+        <label>Notes <span style="font-weight:400;text-transform:none;">(optional)</span></label>
+        <input type="text" id="favNotes" placeholder="e.g. use the good pan, order from DoorDash, add extra cheese..." />
+      </div>
+      <div class="field-group" style="margin-top:10px;margin-bottom:10px;">
+        <label>Recipe URL <span style="font-weight:400;text-transform:none;">(optional)</span></label>
+        <input type="url" id="favUrl" placeholder="https://... paste a recipe link to save with this favorite" />
+        <div class="field-hint">When you swap this favorite into a meal slot, the recipe link comes with it</div>
+      </div>
+      <button class="btn-pink" onclick="addFavorite()">⭐ Save Favorite</button>
+    </div>
+    <div style="margin-bottom:10px;">
+      <label>Filter by category</label>
+      <div class="check-group" id="favFilterChips">
+        <div class="check-chip on" data-v="all" onclick="filterFavs(this)">All</div>
+        <div class="check-chip" data-v="breakfast" onclick="filterFavs(this)">☀️ Breakfast</div>
+        <div class="check-chip" data-v="lunch" onclick="filterFavs(this)">🌤️ Lunch</div>
+        <div class="check-chip" data-v="dinner" onclick="filterFavs(this)">🌙 Dinner</div>
+        <div class="check-chip" data-v="any" onclick="filterFavs(this)">✨ Any</div>
+      </div>
+    </div>
+    <div id="favList"></div>
+  </div>
+</div>
+
+<!-- PREP DAY -->
+<div class="tab-content" id="tab-prep">
+  <div class="card">
+    <div class="section-head"><h2>👩‍🍳 Prep Day Planner</h2><p>A Sunday checklist built from your week — batch what you can, coast through the rest</p></div>
+    <div id="prepState">
+      <div class="alert alert-info">Plan your week first, then generate your prep checklist.</div>
+      <button class="btn-pink" onclick="buildPrepPlan()">📋 Generate Prep Checklist</button>
+    </div>
+    <div id="prepList" class="hidden"></div>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="tab-content" id="tab-profile">
+  <div class="card">
+    <div class="section-head"><h2>⚙️ My Preferences</h2><p>Saved in your browser — used for every smart suggestion</p></div>
+    <div class="prefs-grid">
+      <div class="field-group"><label>Household Size</label>
+        <select id="pHouse"><option value="1">Just me</option><option value="2" selected>2 people</option><option value="3">3 people</option><option value="4">4 people</option><option value="5">5+ people</option></select>
+      </div>
+      <div class="field-group"><label>Cooking Time</label>
+        <select id="pTime"><option value="quick">Quick — under 30 min</option><option value="medium" selected>Medium — 30–60 min</option><option value="long">Happy to cook 60+ min</option></select>
+      </div>
+      <div class="field-group"><label>Skill Level</label>
+        <select id="pSkill"><option value="beginner">Beginner — keep it simple</option><option value="home" selected>Home cook — comfortable</option><option value="confident">Confident — challenge me</option></select>
+      </div>
+      <div class="field-group"><label>Budget Feel</label>
+        <select id="pBudget"><option value="frugal">Budget-conscious</option><option value="moderate" selected>Moderate</option><option value="flexible">Flexible</option></select>
+      </div>
+    </div>
+    <div class="field-group">
+      <label>Meals I Usually Skip</label>
+      <div class="check-group" id="skipDefaultChips">
+        <div class="check-chip" data-v="Breakfast" onclick="tog(this)">☀️ Breakfast</div>
+        <div class="check-chip" data-v="Lunch" onclick="tog(this)">🌤️ Lunch</div>
+        <div class="check-chip" data-v="Dinner" onclick="tog(this)">🌙 Dinner</div>
+      </div>
+      <div class="field-hint">Grayed out by default each week — you can still enable any slot day by day</div>
+    </div>
+    <div class="field-group">
+      <label>Dietary Needs</label>
+      <div class="check-group" id="dietChips">
+        <div class="check-chip" data-v="vegetarian" onclick="tog(this)">🥦 Vegetarian</div>
+        <div class="check-chip" data-v="vegan" onclick="tog(this)">🌱 Vegan</div>
+        <div class="check-chip" data-v="gluten-free" onclick="tog(this)">🌾 Gluten-Free</div>
+        <div class="check-chip" data-v="dairy-free" onclick="tog(this)">🥛 Dairy-Free</div>
+        <div class="check-chip" data-v="nut-free" onclick="tog(this)">🥜 Nut-Free</div>
+        <div class="check-chip" data-v="low-carb" onclick="tog(this)">🥩 Low-Carb</div>
+        <div class="check-chip" data-v="halal" onclick="tog(this)">☪️ Halal</div>
+        <div class="check-chip" data-v="kosher" onclick="tog(this)">✡️ Kosher</div>
+      </div>
+    </div>
+    <div class="field-group">
+      <label>Favorite Cuisines</label>
+      <div class="check-group" id="cuisineChips">
+        <div class="check-chip" data-v="Italian" onclick="tog(this)">🍝 Italian</div>
+        <div class="check-chip" data-v="Mexican" onclick="tog(this)">🌮 Mexican</div>
+        <div class="check-chip" data-v="Asian" onclick="tog(this)">🍜 Asian</div>
+        <div class="check-chip" data-v="Mediterranean" onclick="tog(this)">🫒 Mediterranean</div>
+        <div class="check-chip" data-v="American" onclick="tog(this)">🍔 American</div>
+        <div class="check-chip" data-v="Indian" onclick="tog(this)">🍛 Indian</div>
+        <div class="check-chip" data-v="Middle Eastern" onclick="tog(this)">🧆 Middle Eastern</div>
+        <div class="check-chip" data-v="French" onclick="tog(this)">🥐 French</div>
+      </div>
+    </div>
+    <div class="field-group">
+      <label>Never Include</label>
+      <input type="text" id="pAvoid" placeholder="e.g. fish, seafood, mushrooms, cilantro..." />
+      <div class="field-hint">Comma-separated words — filters meal names AND ingredients</div>
+    </div>
+    <button class="btn-pink" onclick="saveProfile()">💾 Save Preferences</button>
+    <div id="profSaved" class="alert alert-ok hidden" style="margin-top:10px;">✅ Preferences saved!</div>
+  </div>
+</div>
+</div><!-- /main-wrap -->
+
+<!-- Recipe Modal -->
+<div class="modal-overlay" id="recipeModal">
+  <div class="modal">
+    <h3>🔗 Recipe Link</h3>
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:14px;">Save a link to this recipe — tap it any time to open while cooking.</p>
+    <div class="field-group"><label>Meal</label><input type="text" id="rModalMeal" readonly style="background:#f5f5f5;" /></div>
+    <div class="field-group"><label>Recipe URL</label><input type="url" id="rModalUrl" placeholder="https://..." /></div>
+    <div class="action-row">
+      <button class="btn-pink" onclick="saveRecipe()">Save Link</button>
+      <button class="btn-green" onclick="closeRecipeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal-overlay" id="previewModal">
+  <div class="modal" style="max-width:640px;">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px;">
+      <h3 id="previewTitle" style="margin-bottom:0;"></h3>
+      <button class="btn-green" style="padding:6px 14px;font-size:0.85rem;white-space:nowrap;" onclick="closePreviewModal()">Close</button>
+    </div>
+    <div id="previewDietTags" style="margin-bottom:12px;display:flex;flex-wrap:wrap;gap:5px;"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" id="previewGrid">
+      <div>
+        <div style="font-family:'Fredoka One',cursive;font-size:1rem;color:var(--header);margin-bottom:8px;">🛒 Ingredients</div>
+        <div id="previewIngredients"></div>
+      </div>
+      <div>
+        <div style="font-family:'Fredoka One',cursive;font-size:1rem;color:var(--header);margin-bottom:8px;">👨‍🍳 How to Make It</div>
+        <ol id="previewSteps" style="padding-left:18px;"></ol>
+      </div>
+    </div>
+    <div style="margin-top:14px;padding-top:12px;border-top:2px dashed rgba(166,215,106,0.4);">
+      <button class="btn-pink" id="previewUseBtn" style="width:100%;" onclick="usePreviewMeal()">+ Add to This Slot</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="main-wrap">
+<footer>
+  <div style="font-weight:700;color:rgba(255,255,255,0.9);margin-bottom:3px;">Perfectly Apped · A Cha-Cha-Tchotchkes Collection</div>
+  <div style="font-size:0.75rem;color:rgba(255,255,255,0.45);">Original app credit: GetPaidToBeYouOnline</div>
+</footer>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// MEAL DATABASE — 280+ meals
+// ═══════════════════════════════════════════════════
+const DB = [
+// ── BREAKFASTS ──────────────────────────────────────────
+{n:"Scrambled Eggs & Toast",t:"breakfast",cuisine:["American"],diet:[],time:"quick",nocook:false,avoid:[],
+ing:{Produce:["bread"],Dairy:["butter","eggs"],Pantry:["salt","pepper"]},
+steps:["Crack 2-3 eggs into a bowl, add a splash of milk, salt and pepper. Whisk well.","Melt butter in a non-stick pan over medium-low heat — low and slow is the secret.","Pour in eggs and gently push them around with a spatula, pulling from the edges. Pull off heat just before they look done. They'll finish cooking on their own.","Toast your bread while the eggs rest. Butter it. Eat immediately."]},
+
+{n:"Avocado Toast",t:"breakfast",cuisine:["American","Mediterranean"],diet:["vegetarian","vegan","dairy-free"],time:"quick",nocook:false,avoid:[],
+ing:{Produce:["avocado","lemon","bread"],Pantry:["salt","red pepper flakes"]},
+steps:["Toast your bread to your preferred level of crunch.","Halve the avocado, remove the pit, and scoop into a bowl. Add a squeeze of lemon, a pinch of salt. Mash with a fork — chunky is fine, smooth is fine, your call.","Spread generously on toast. Finish with red pepper flakes and any extras you like (everything bagel seasoning, a fried egg, sliced tomato)."]},
+
+{n:"Overnight Oats",t:"breakfast",cuisine:["American"],diet:["vegetarian","vegan","dairy-free","gluten-free"],time:"quick",nocook:true,avoid:[],
+ing:{Pantry:["oats","chia seeds","maple syrup"],Produce:["berries"],Dairy:["almond milk"]},
+steps:["Combine half a cup of rolled oats, a tablespoon of chia seeds, a drizzle of maple syrup, and about three-quarters cup of milk in a jar or container.","Stir well, seal, and refrigerate overnight — at least 6 hours.","In the morning, give it a stir. Add a splash more milk if it's too thick. Top with berries and eat cold straight from the jar."]},
+
+{n:"Greek Yogurt Parfait",t:"breakfast",cuisine:["Mediterranean"],diet:["vegetarian","gluten-free"],time:"quick",nocook:true,avoid:[],
+ing:{Dairy:["Greek yogurt"],Produce:["berries"],Pantry:["granola","honey"]},
+steps:["Spoon Greek yogurt into a bowl or glass — as much as you want.","Layer on granola and fresh or frozen berries.","Drizzle honey over the top. Done. The layering is optional; nobody is grading you on presentation at breakfast."]},
+
+{n:"Banana Pancakes",t:"breakfast",cuisine:["American"],diet:["vegetarian"],time:"medium",nocook:false,avoid:[],
+ing:{Produce:["banana"],Dairy:["eggs","milk","butter"],Pantry:["flour","baking powder","maple syrup"]},
+steps:["Mix 1 cup flour, 1 tbsp baking powder, and a pinch of salt in a bowl.","In another bowl, whisk 1 egg, 1 cup milk, 2 tbsp melted butter, and 1 mashed banana.","Pour wet into dry and stir until just combined. A few lumps are fine — don't overmix or they'll be tough.","Heat a pan over medium heat, lightly butter it. Pour batter in small rounds. Flip when bubbles form on top and edges look set. About 2 minutes per side.","Serve with maple syrup, extra banana slices, or whatever makes you happy."]},
+
+{n:"Veggie Omelette",t:"breakfast",cuisine:["American"],diet:["vegetarian","gluten-free","low-carb"],time:"quick",nocook:false,avoid:[],
+ing:{Produce:["spinach","bell pepper","onion"],Dairy:["eggs","cheese"],Pantry:["olive oil"]},
+steps:["Dice the bell pepper and onion. Sauté in a little olive oil in a non-stick pan over medium heat for 3-4 minutes until softened. Add spinach and stir until wilted. Set aside.","Whisk 2-3 eggs with a pinch of salt. Wipe the pan, add a little more oil, pour in eggs over medium-low heat.","As the edges set, lift them gently and tilt the pan so raw egg runs underneath.","When mostly set but still slightly glossy on top, scatter the veggies and cheese over one half. Fold and slide onto a plate."]},
+
+{n:"Chia Pudding",t:"breakfast",cuisine:["American"],diet:["vegetarian","vegan","dairy-free","gluten-free"],time:"quick",nocook:true,avoid:[],
+ing:{Pantry:["chia seeds","maple syrup","vanilla"],Dairy:["coconut milk"],Produce:["mango"]},
+steps:["Whisk together 3 tbsp chia seeds, 1 cup coconut milk, 1 tsp maple syrup, and a dash of vanilla in a jar.","Stir again after 5 minutes — this prevents clumping. Seal and refrigerate at least 4 hours, or overnight.","In the morning, top with diced mango or whatever fruit you have. The texture should be thick and pudding-like. If it's too thick, stir in a splash of milk."]},
+
+{n:"French Toast",t:"breakfast",cuisine:["French","American"],diet:["vegetarian"],time:"quick",nocook:false,avoid:[],
+ing:{Produce:["bread"],Dairy:["eggs","milk","butter"],Pantry:["cinnamon","maple syrup"]},
+steps:["Whisk together 2 eggs, a quarter cup of milk, a pinch of cinnamon, and a splash of vanilla in a shallow bowl.","Heat butter in a pan over medium heat until foamy.","Dip each bread slice in the egg mixture for about 10 seconds per side — let it soak but not fall apart. Thicker bread works better here.","Cook 2-3 minutes per side until golden brown. Serve with maple syrup."]},
+
+{n:"Shakshuka",t:"breakfast",cuisine:["Middle Eastern","Mediterranean"],diet:["vegetarian","gluten-free","dairy-free"],time:"medium",nocook:false,avoid:[],
+ing:{Produce:["tomatoes","bell pepper","onion","garlic"],Dairy:["eggs"],Pantry:["cumin","paprika","olive oil","canned tomatoes"]},
+steps:["Heat olive oil in a wide skillet over medium heat. Add diced onion and bell pepper. Cook 5-6 minutes until soft.","Add minced garlic, 1 tsp cumin, 1 tsp paprika, salt and pepper. Stir for 1 minute.","Pour in a can of crushed tomatoes. Simmer for 8-10 minutes, stirring occasionally, until the sauce thickens slightly.","Make small wells in the sauce with a spoon. Crack an egg into each well. Cover the pan and cook 5-7 minutes — until whites are set but yolks are still a little runny.","Serve with crusty bread or pita for scooping."]},
+
+{n:"Smoothie Bowl",t:"breakfast",cuisine:["American"],diet:["vegetarian","vegan","dairy-free","gluten-free"],time:"quick",nocook:true,avoid:[],
+ing:{Produce:["frozen banana","frozen berries","spinach"],Dairy:["almond milk"],Pantry:["granola","chia seeds"]},
+steps:["Blend 1 frozen banana, a big handful of frozen berries, a handful of spinach, and just enough almond milk to get the blender moving. You want it thick — thicker than a drinkable smoothie.","Pour into a bowl.","Top with granola, chia seeds, fresh fruit, coconut flakes, or whatever you have. The toppings are the fun part."]},
+
+{n:"Breakfast Burrito",t:"breakfast",cuisine:["Mexican"],diet:["vegetarian"],time:"quick",nocook:false,avoid:[],
+ing:{Produce:["onion","bell pepper","avocado"],Dairy:["eggs","cheese"],Pantry:["tortillas","salsa"]},
+steps:["Dice onion and bell pepper. Sauté in a little oil over medium heat for 3-4 minutes.","Whisk 2-3 eggs, pour into the pan. Scramble gently with the vegetables.","Warm a tortilla in a dry pan for 30 seconds per side.","Layer eggs, sliced avocado, cheese, and salsa on the tortilla. Fold in the sides and roll tightly.","Eat immediately or wrap in foil for later."]},
+
+{n:"Huevos Rancheros",t:"breakfast",cuisine:["Mexican"],diet:["vegetarian","gluten-free"],time:"medium",nocook:false,avoid:[],
+ing:{Produce:["tomatoes","onion","jalapeño","avocado"],Dairy:["eggs"],Pantry:["tortillas","refried beans","cumin"]},
+steps:["Make a quick salsa: dice tomatoes, onion, and jalapeño. Toss with salt, lime juice, and a splash of cumin. Set aside.","Warm refried beans in a small pot or microwave.","Fry eggs in a lightly oiled pan — sunny side up or over easy.","Warm tortillas, spread with beans, top with fried eggs, salsa, and sliced avocado."]},
+
+{n:"Acai Bowl",t:"breakfast",cuisine:["American"],diet:["vegetarian","vegan","dairy-free","gluten-free"],time:"quick",nocook:true,avoid:[],
+ing:{Produce:["frozen acai","banana","berries"],Pantry:["granola","coconut flakes","honey"]},
+steps:["Blend one frozen acai packet (or a big spoonful of acai powder), half a frozen banana, and a small handful of frozen berries. Use as little liquid as possible — the goal is soft-serve thick, not drinkable.","Scoop into a bowl.","Top with granola, sliced banana, fresh berries, coconut flakes, and a drizzle of honey. Eat immediately before it melts."]},
+
+{n:"Cinnamon Oatmeal",t:"breakfast",cuisine:["American"],diet:["vegetarian","vegan","dairy-free"],time:"quick",nocook:false,avoid:[],
+ing:{Pantry:["oats","cinnamon","brown sugar"],Produce:["apple"],Dairy:["almond milk"]},
+steps:["Bring 1.5 cups milk or water to a simmer in a small pot. Add half a cup of rolled oats.","Cook 3-5 minutes, stirring occasionally, until thick and creamy.","Stir in a pinch of cinnamon, a pinch of brown sugar. Top with diced apple.","Microwave version: oats plus milk in a big bowl, 2-3 minutes, stir halfway through. Watch it — it will absolutely boil over if you're not paying attention."]},
+
+{n:"Egg & Cheese Muffins",t:"breakfast",cuisine:["American"],diet:["vegetarian","gluten-free","low-carb"],time:"medium",nocook:false,avoid:[],
+ing:{Dairy:["eggs","cheese","milk"],Produce:["spinach","cherry tomatoes"],Pantry:["olive oil"]},
+steps:["Preheat oven to 375°F. Grease a muffin tin well.","Whisk 6 eggs with a splash of milk, salt, and pepper.","Distribute chopped spinach and halved cherry tomatoes between the muffin cups.","Pour egg mixture over the top, filling each cup about three-quarters full. Top with shredded cheese.","Bake 18-22 minutes until puffed and set. Let cool 5 minutes before removing. These keep in the fridge for 4 days."]},
+
+{n:"Bagel with Cream Cheese",t:"breakfast",cuisine:["American"],diet:["vegetarian"],time:"quick",nocook:true,avoid:[],
+ing:{Produce:["bagel","cucumber"],Dairy:["cream cheese"],Pantry:["everything bagel seasoning"]},
+steps:["Slice and toast your bagel to your preferred level. Or don't toast it. You're an adult.","Spread cream cheese generously on both halves.","Layer on cucumber slices, sprinkle with everything bagel seasoning. Optional additions: capers, red onion, smoked salmon, a squeeze of lemon."]},
+
+{n:"Peanut Butter Banana Toast",t:"breakfast",cuisine:["American"],diet:["vegetarian","vegan","dairy-free"],time:"quick",nocook:true,avoid:["nut"],
+ing:{Produce:["banana","bread"],Pantry:["peanut butter","honey"]},
+steps:["Toast bread until it's how you like it.","Spread peanut butter thickly on each slice — enough that it melts slightly from the warm toast.","Top with sliced banana and a drizzle of honey. Optional: a sprinkle of cinnamon, some granola, or a few chocolate chips if it's that kind of morning."]},
+
+{n:"Biscuits and Gravy",t:"breakfast",cuisine:["American"],diet:[],time:"medium",nocook:false,avoid:[],
+ing:{Dairy:["butter","milk","sausage"],Pantry:["flour","baking powder"]},
+steps:["For biscuits: mix 2 cups flour, 1 tbsp baking powder, pinch of salt. Cut in 6 tbsp cold butter until crumbly. Add 3/4 cup cold milk, mix until just combined. Pat out, cut into rounds, bake at 450°F for 12-14 minutes.","For gravy: brown sausage in a pan, breaking it up as it cooks. Don't drain the fat.","Sprinkle 3 tbsp flour over the sausage and stir for 1-2 minutes.","Slowly pour in 2 cups milk while stirring constantly. Keep stirring over medium heat until thick and bubbly, about 5 minutes. Season with lots of black pepper and salt.","Split biscuits and smother with gravy."]},
+
+{n:"Frittata",t:"breakfast",cuisine:["Italian"],diet:["vegetarian","gluten-free","low-carb"],time:"medium",nocook:false,avoid:[],
+ing:{Dairy:["eggs","parmesan","milk"],Produce:["zucchini","cherry tomatoes","onion"],Pantry:["olive oil"]},
+steps:["Preheat oven to 375°F.","Sauté diced zucchini and onion in an oven-safe skillet with olive oil over medium heat, about 5 minutes. Season with salt and pepper.","Whisk 6 eggs with a splash of milk, salt, pepper, and grated parmesan.","Pour egg mixture over the vegetables in the skillet. Scatter halved cherry tomatoes on top.","Cook on the stovetop for 3-4 minutes until edges start to set, then transfer to the oven for 12-15 minutes until fully set and golden on top.","Let cool 5 minutes before slicing."]},
+
+{n:"Yogurt & Granola",t:"breakfast",cuisine:["American"],diet:["vegetarian","gluten-free"],time:"quick",nocook:true,avoid:[],
+ing:{Dairy:["yogurt"],Pantry:["granola","honey"],Produce:["berries"]},
+steps:["Put yogurt in a bowl.","Add granola and berries.","Drizzle with honey. That's genuinely it."]},
+
+{n:"Cereal with Fruit",t:"breakfast",cuisine:["American"],diet:["vegetarian","dairy-free"],time:"quick",nocook:true,avoid:[],
+ing:{Pantry:["cereal"],Dairy:["milk"],Produce:["banana","berries"]},
+steps:["Pour cereal into bowl.","Add milk.","Top with sliced banana and berries. Eat before it gets soggy — or don't, some people like it soggy."]},
+
+{n:"Toast with Jam",t:"breakfast",cuisine:["American"],diet:["vegetarian","vegan","dairy-free"],time:"quick",nocook:true,avoid:[],
+ing:{Produce:["bread"],Pantry:["jam","butter"]},
+steps:["Toast bread.","Butter while hot.","Spread jam generously. More jam than feels polite is usually the right amount."]},
+
+{n:"Cottage Cheese & Fruit",t:"breakfast",cuisine:["American"],diet:["vegetarian","gluten-free","low-carb"],time:"quick",nocook:true,avoid:[],
+ing:{Dairy:["cottage cheese"],Produce:["pineapple","berries","peach"],Pantry:["honey"]},
+steps:["Scoop cottage cheese into a bowl.","Top with your fruit of choice — pineapple chunks, sliced peach, berries all work great.","Drizzle with honey. Optional: a sprinkle of cinnamon or some chopped nuts."]},
+
+{n:"Hard Boiled Eggs & Toast",t:"breakfast",cuisine:["American"],diet:["vegetarian","dairy-free"],time:"quick",nocook:false,avoid:[],
+ing:{Dairy:["eggs"],Produce:["bread"],Pantry:["salt","pepper"]},
+steps:["Place eggs in a pot, cover with cold water by an inch. Bring to a boil.","Once boiling, cover, turn off heat and let sit 10-12 minutes for fully hard boiled.","Transfer to ice water immediately and let cool 5 minutes. Peel under running water.","Toast your bread. Slice eggs over toast, season with salt and pepper."]},
+
+{n:"Muesli",t:"breakfast",cuisine:["American","Mediterranean"],diet:["vegetarian","vegan","dairy-free"],time:"quick",nocook:true,avoid:[],
+ing:{Pantry:["rolled oats","dried fruit","nuts","honey"],Dairy:["almond milk"]},
+steps:["Combine rolled oats, a handful of dried fruit, and some chopped nuts in a bowl.","Pour cold milk over the top. Let sit 5 minutes if you want it softer.","Drizzle with honey. Eat cold — no cooking needed."]},
+
+// ── LUNCHES ──────────────────────────────────────────────
+{n:"Caesar Salad",t:"lunch",cuisine:["American"],diet:["vegetarian"],time:"quick",nocook:true,avoid:[],
+ing:{Produce:["romaine lettuce","lemon"],Dairy:["parmesan"],Pantry:["Caesar dressing","croutons"]},
+steps:["Chop or tear romaine into bite-sized pieces. Spin or pat dry — wet lettuce = sad dressing.","Toss with Caesar dressing until everything is lightly coated. Don't overdress.","Add croutons and shaved parmesan. A squeeze of lemon brightens the whole thing.","If adding chicken, slice grilled or rotisserie chicken over the top."]},
+
+{n:"BLT Sandwich",t:"lunch",cuisine:["American"],diet:[],time:"quick",nocook:false,avoid:[],
+ing:{Produce:["tomato","lettuce","bread"],Proteins:["bacon"],Pantry:["mayo"]},
+steps:["Cook bacon in a pan over medium heat until crispy. Drain on paper towels.","Toast the bread.","Spread mayo on both slices — generously.","Layer lettuce, tomato slices (seasoned with a little salt), and bacon. The order matters: lettuce on the bottom keeps the bread from getting soggy."]},
+
+{n:"Hummus & Veggie Wrap",t:"lunch",cuisine:["Mediterranean"],diet:["vegetarian","vegan","dairy-free"],time:"quick",nocook:true,avoid:[],
+ing:{Produce:["cucumber","bell pepper","carrot","spinach"],Pantry:["tortillas","hummus"]},
+steps:["Warm the tortilla for 20 seconds in a dry pan or microwave.","Spread hummus over the center, leaving an inch around the edges.","Layer spinach, sliced cucumber, bell pepper strips, and shredded carrot down the middle.","Fold in the sides, then roll firmly from the bottom up. Slice diagonally."]},
+
+{n:"Tomato Basil Soup",t:"lunch",cuisine:["Italian"],diet:["vegetarian","gluten-free"],time:"medium",nocook:false,avoid:["tomato"],
+ing:{Produce:["tomatoes","onion","garlic","basil"],Dairy:["cream","butter"],Pantry:["olive oil","broth"]},
+steps:["Sauté diced onion in butter and olive oil over medium heat until soft, about 5 minutes. Add minced garlic, cook 1 more minute.","Add a can of crushed tomatoes and a cup of broth. Bring to a simmer and cook 15 minutes.","Blend until smooth with an immersion blender or in batches in a regular blender. Be careful with hot liquid.","Stir in a splash of cream, salt, and pepper. Taste and adjust.","Serve with fresh basil on top and a grilled cheese on the side if the universe is being fair to you."]},
+
+{n:"Grain Bowl",t:"lunch",cuisine:["American","Mediterranean"],diet:["vegetarian","vegan","dairy-free","gluten-free"],time:"medium",nocook:false,avoid:[],
+ing:{Produce:["cherry tomatoes","cucumber","spinach","lemon"],Pantry:["quinoa","olive oil"],Proteins:["chickpeas"]},
+steps:["Cook quinoa per package directions — usually 1 cup quinoa to 2 cups water, bring to boil, cover and simmer 15 minutes. Fluff with a fork.","Drain and rinse chickpeas. Optional: roast them at 400°F for 20 minutes with olive oil and salt for crunch.","Assemble: quinoa as the base, then pile on spinach, halved cherry tomatoes, sliced cucumber, and chickpeas.","Drizzle with olive oil and lemon juice, season with salt and pepper. Add any sauce or dressing you like."]},
+
+{n:"Turkey Club Sandwich",t:"lunch",cuisine:["American"],diet:[],time:"quick",nocook:true,avoid:[],
+ing:{Produce:["tomato","lettuce","avocado","bread"],Proteins:["turkey deli meat","bacon"],Dairy:["swiss cheese"],Pantry:["mayo","mustard"]},
+steps:["Cook bacon if not pre-cooked. Toast three slices of bread per sandwich.","Spread mayo on two slices, mustard on one.","Layer: first slice — turkey, swiss, lettuce. Add middle bread slice. Second layer — bacon, tomato, avocado. Top with final bread slice.","Secure with toothpicks and slice diagonally. The three-layer construction is non-negotiable for a proper club."]},
+
+{n:"Caprese Salad",t:"lunch",cuisine:["Italian","Mediterranean"],diet:["vegetarian","gluten-free"],time:"quick",nocook:true,avoid:[],
+ing:{Produce:["tomatoes","basil"],Dairy:["fresh mozzarella"],Pantry:["olive oil","balsamic glaze"]},
+steps:["Slice tomatoes and fresh mozzarella into similar-sized rounds — about a quarter inch thick.","Arrange alternating slices of tomato and mozzarella on a plate, slightly overlapping.","Tuck fresh basil leaves between the slices.","Drizzle with good olive oil and balsamic glaze. Season with salt and a crack of black pepper. Serve at room temperature — cold mozzarella is a tragedy."]},
+
+{n:"Lentil Soup",t:"lunch",cuisine:["Mediterranean","Middle Eastern"],diet:["vegetarian","vegan","gluten-free","dairy-free"],time:"medium",nocook:false,avoid:[],
+ing:{Produce:["onion","carrot","celery","garlic","tomatoes"],Pantry:["red lentils","cumin","paprika","broth","olive oil"]},
+steps:["Heat olive oil in a large pot. Add diced onion, carrot, and celery. Cook 6-7 minutes until soft.","Add minced garlic, 1.5 tsp cumin, 1 tsp paprika. Stir for 1 minute.","Add 1.5 cups rinsed red lentils, a can of diced tomatoes, and 5 cups broth. Bring to a boil.","Reduce heat and simmer 20-25 minutes until lentils are completely soft. Season with salt, pepper, and lemon juice.","Optionally blend half the soup for a creamier texture."]},
+
+{n:"Tuna Salad Sandwich",t:"lunch",cuisine:["American"],diet:["dairy-free"],time:"quick",nocook:true,avoid:["fish","seafood","tuna"],
+ing:{Produce:["celery","red onion","lemon","bread"],Proteins:["canned tuna"],Pantry:["mayo","dijon mustard"]},
+steps:["Drain canned tuna well — press out as much liquid as you can.","Mix tuna with diced celery, finely diced red onion, mayo, a squirt of dijon, lemon juice, salt and pepper.","Taste and adjust. Good tuna salad should taste bright and a little tangy, not heavy.","Pile onto toasted bread with lettuce and tomato."]},
+
+{n:"Greek Salad",t:"lunch",cuisine:["Mediterranean"],diet:["vegetarian","gluten-free"],time:"quick",nocook:true,avoid:[],
+ing:{Produce:["cucumber","tomato","red onion","bell pepper","kalamata olives"],Dairy:["feta cheese"],Pantry:["olive oil","oregano","lemon"]},
+steps:["Chop cucumber, tomato, and bell pepper into chunky pieces. Slice red onion thin.","Toss vegetables and olives together in a bowl.","Dress with a generous drizzle of olive oil, lemon juice, salt, dried oregano, and a crack of black pepper.","Top with a big crumble of feta cheese. Don't stir it in — let it sit on top."]},
+
+{n:"Quesadillas",t:"lunch",cuisine:["Mexican"],diet:["vegetarian"],time:"quick",nocook:false,avoid:[],
+ing:{Produce:["bell pepper","onion"],Dairy:["cheese"],Pantry:["tortillas","salsa","sour cream"]},
+steps:["Sauté sliced bell pepper and onion in a little oil over medium heat until softened, about 5 minutes. Season with salt and cumin if you have it.","Heat a large pan over medium heat. Place a tortilla in the pan.","Spread veggies and a generous layer of shredded cheese on one half. Fold the other half over.","Cook 2-3 minutes per side until golden and crispy with the cheese melted.","Cut into wedges. Serve with salsa and sour cream."]},
+
+{n:"Minestrone Soup",t:"lunch",cuisine:["Italian"],diet:["vegetarian","vegan","dairy-free"],time:"medium",nocook:false,avoid:[],
+ing:{Produce:["onion","carrot","celery","zucchini","garlic","tomatoes"],Pantry:["pasta","cannellini beans","broth","olive oil"]},
+steps:["Heat olive oil in a large pot. Add diced onion, carrot, and celery. Cook 6 minutes until softened.","Add minced garlic and diced zucchini, cook 2 more minutes.","Add a can of diced tomatoes, a can of rinsed cannellini beans, and 5 cups broth. Bring to a boil.","Add a cup of small pasta and simmer 10-12 minutes until pasta is tender.","Season generously with salt, pepper, and dried herbs. Serve with crusty bread."]},
+
+{n:"Falafel Wrap",t:"lunch",cuisine:["Middle Eastern"],diet:["vegetarian","vegan","dairy-free"],time:"medium",nocook:false,avoid:[],
+ing:{Produce:["cucumber","tomato","red onion","lettuce"],Pantry:["falafel mix","pita bread","tahini","lemon"]},
+steps:["Prepare falafel per package directions — usually mix with water, rest 10 minutes, then pan-fry or bake.","Warm pita bread. Make a quick tahini sauce: thin tahini with lemon juice and water until drizzleable, season with salt.","Fill pita with falafel, shredded lettuce, diced tomato, sliced red onion.","Drizzle tahini sauce over everything. Eat immediately or it gets soggy."]},
+
+{n:"Chicken Noodle Soup",t:"lunch",cuisine:["American"],diet:["dairy-free"],time:"medium",nocook:false,avoid:[],
+ing:{Produce:["onion","carrot","celery","garlic"],Proteins:["chicken breast"],Pantry:["egg noodles","chicken broth","thyme"]},
+steps:["Heat a little oil in a large pot. Add diced onion, carrot, and celery. Cook 5-6 minutes.","Add minced garlic and dried thyme, stir for 30 seconds.","Add chicken breast (whole) and 6 cups chicken broth. Bring to a boil, reduce and simmer 15-20 minutes until chicken is cooked through.","Remove chicken, shred with two forks, return to pot.","Add egg noodles and simmer 6-8 minutes until tender. Season with salt and pepper."]},
+
+{n:"Asian Noodle Salad",t:"lunch",cuisine:["Asian"],diet:["vegan","dairy-free"],time:"quick",nocook:true,avoid:[],
+ing:{Produce:["cucumber","carrot","green onion","cabbage","lime"],Pantry:["rice noodles","soy sauce","sesame oil","peanut butter"]},
+steps:["Cook rice noodles per package (usually just soak in hot water 5-8 minutes), rinse with cold water, drain well.","Make dressing: whisk together 2 tbsp peanut butter, 2 tbsp soy sauce, 1 tbsp sesame oil, juice of a lime, a little ginger and garlic if you have it. Thin with a splash of water if needed.","Toss noodles with shredded cabbage, julienned carrot, sliced cucumber, and sliced green onion.","Pour dressing over and toss well. Top with sesame seeds and crushed peanuts if desired."]},
+
+{n:"Panzanella",t:"lunch",cuisine:["Italian"],diet:["vegetarian","vegan","dairy-free"],time:"quick",nocook:true,avoid:[],
+ing:{Produce:["tomatoes","cucumber","basil","red onion","bread"],Pantry:["olive oil","red wine vinegar"]},
+steps:["Tear or cube day-old bread into bite-sized pieces. If it's fresh, toast it lightly so it can absorb dressing without turning to mush.","Chop tomatoes and cucumber into chunks. Slice red onion thin.","Whisk together olive oil and red wine vinegar, about 3:1 ratio, with salt and pepper.","Toss everything together — bread, vegetables, torn basil. Let it sit 10-15 minutes before serving so the bread soaks up the dressing."]},
+
+{n:"Baked Potato Soup",t:"lunch",cuisine:["American"],diet:["vegetarian","gluten-free"],time:"medium",nocook:false,avoid:[],
+ing:{Produce:["potatoes","onion","garlic"],Dairy:["butter","milk","sour cream","cheddar"],Pantry:["broth","chives"]},
+steps:["Peel and cube 4 large potatoes. Boil in salted water until very tender, about 15 minutes. Drain.","In the same pot, melt butter over medium heat. Sauté diced onion until soft. Add minced garlic.","Add potatoes back to the pot with broth and milk. Mash roughly — you want a chunky, creamy texture.","Stir in sour cream and most of the cheddar. Season with salt and pepper.","Serve topped with remaining cheese, chives, and sour cream."]},
+
+{n:"Cobb Salad",t:"lunch",cuisine:["American"],diet:["gluten-free","low-carb"],time:"quick",nocook:true,avoid:[],
+ing:{Produce:["romaine","tomato","avocado"],Proteins:["chicken breast","bacon"],Dairy:["blue cheese","hard-boiled eggs"],Pantry:["olive oil","lemon"]},
+steps:["Arrange chopped romaine as the base.","Lay toppings in rows across the lettuce — sliced hard-boiled eggs, diced avocado, halved cherry tomatoes, crumbled bacon, diced cooked chicken, and blue cheese crumbles.","Dress with a simple vinaigrette: olive oil, lemon juice, a little dijon, salt and pepper.","The signature look is the ingredients in neat rows. The signature taste is everything tossed together."]},
+
+{n:"Veggie Fried Rice",t:"lunch",cuisine:["Asian"],diet:["vegetarian","dairy-free"],time:"quick",nocook:false,avoid:[],
+ing:{Produce:["onion","carrot","peas","garlic","green onion"],Dairy:["eggs"],Pantry:["cooked rice","soy sauce","sesame oil"]},
+steps:["This works best with day-old cold rice — fresh rice is too wet. If you only have fresh, spread it on a baking sheet and refrigerate for 30 minutes.","Heat oil in a wok or large pan over high heat. Add diced onion and carrot, stir fry 2-3 minutes.","Push vegetables to one side. Crack eggs into the empty space, scramble quickly, then mix into the vegetables.","Add cold rice and stir fry, pressing it against the pan to get some crispy bits.","Add frozen peas, soy sauce, and sesame oil. Toss well. Top with sliced green onion."]},
+
+{n:"French Onion Soup",t:"lunch",cuisine:["French"],diet:["vegetarian"],time:"long",nocook:false,avoid:[],
+ing:{Produce:["onions","garlic","thyme","baguette"],Dairy:["butter","gruyere cheese"],Pantry:["broth","white wine"]},
+steps:["Slice 4 large onions thin. Melt butter in a heavy pot over medium-low heat. Add onions and cook, stirring occasionally, for 45-60 minutes until deeply golden and caramelized. This cannot be rushed.","Add minced garlic, a splash of white wine, and fresh thyme. Stir and cook 2 more minutes.","Add 4 cups beef or vegetable broth. Simmer 15 minutes. Season with salt and pepper.","Ladle soup into oven-safe bowls. Float a slice of baguette on top, pile with grated gruyere.","Broil until the cheese is bubbling and brown-spotted. Eat carefully — the bowls will be extremely hot."]},
+
+{n:"Instant Ramen (Upgraded)",t:"lunch",cuisine:["Asian"],diet:["dairy-free"],time:"quick",nocook:false,avoid:[],
+ing:{Produce:["green onion","soft-boiled egg","bok choy"],Pantry:["ramen noodles","soy sauce","sesame oil","chili oil"],Proteins:["soft-boiled egg"]},
+steps:["Cook ramen noodles per package, but use only half the seasoning packet.","While noodles cook, halve some bok choy and wilt it in the broth for the last minute.","Make a soft-boiled egg if you have time: boil 7 minutes, ice bath 5 minutes, peel.","Upgrade the broth: add a splash of soy sauce, a few drops of sesame oil, and chili oil to taste.","Top with halved egg, sliced green onion, and anything else you have — nori, corn, a pat of butter."]},
+
+{n:"Spicy Ramen Bowl",t:"lunch",cuisine:["Asian"],diet:["dairy-free"],time:"quick",nocook:false,avoid:[],
+ing:{Produce:["green onion","corn","nori","garlic"],Pantry:["ramen noodles","miso paste","chili paste","broth","sesame oil"]},
+steps:["Whisk together 2 tbsp miso paste, 1 tbsp chili paste, and a splash of soy sauce in your bowl.","Heat 2 cups broth in a pot. Add a minced garlic clove and a teaspoon of sesame oil. Simmer 3 minutes.","Cook noodles in the broth for the last 3 minutes.","Pour the hot broth and noodles over the miso mixture in your bowl, stir to dissolve.","Top with corn, sliced green onion, nori, and more chili oil if you want."]},
+
+{n:"Deli Snack Plate",t:"lunch",cuisine:["American"],diet:[],time:"quick",nocook:true,avoid:[],
+ing:{Proteins:["turkey deli meat","salami"],Dairy:["cheese slices"],Produce:["grapes","cherry tomatoes","cucumber"],Pantry:["crackers","mustard"]},
+steps:["Pull out a plate or small cutting board.","Arrange deli meats, folded or rolled, on one side.","Add cheese slices, a handful of crackers, and whatever fresh produce you have.","Add a small ramekin of mustard or hummus for dipping. Done in about 3 minutes, zero cooking required."]},
+
+{n:"Cheese & Charcuterie Plate",t:"lunch",cuisine:["French","American"],diet:[],time:"quick",nocook:true,avoid:[],
+ing:{Proteins:["prosciutto","salami"],Dairy:["brie","cheddar","gouda"],Produce:["grapes","apple","olives"],Pantry:["crackers","honey","jam"]},
+steps:["Start with the cheeses — place 2-3 different types at different points on your board.","Fill in with folded prosciutto and salami.","Add grapes, sliced apple, and olives in clusters between the meat and cheese.","Fill gaps with crackers. Add a small bowl of honey and one of jam.","Step back and appreciate it for a moment before demolishing it."]},
+
+{n:"Avocado & Egg Salad",t:"lunch",cuisine:["American"],diet:["vegetarian","gluten-free","low-carb"],time:"quick",nocook:true,avoid:[],
+ing:{Produce:["avocado","lemon","celery"],Dairy:["hard-boiled eggs"],Pantry:["mayo","dijon mustard","chives"]},
+steps:["Hard boil your eggs (or use pre-boiled). Peel and chop roughly.","Halve the avocado and scoop the flesh into a bowl. Mash roughly — you want chunks, not guacamole.","Mix avocado, eggs, diced celery, a spoonful of mayo, a squirt of dijon, and lemon juice. Season with salt and pepper.","Top with chives. Eat on toast, in lettuce cups, or straight from the bowl."]},
+
+{n:"Caprese Panini",t:"lunch",cuisine:["Italian"],diet:["vegetarian"],time:"quick",nocook:false,avoid:[],
+ing:{Produce:["tomato","basil","ciabatta"],Dairy:["fresh mozzarella"],Pantry:["olive oil","balsamic"]},
+steps:["Slice ciabatta in half. Brush cut sides lightly with olive oil.","Layer fresh mozzarella slices, tomato slices, and fresh basil on the bottom half. Drizzle with balsamic, season with salt.","Close the sandwich and grill in a panini press, cast iron pan with a weight on top, or a regular pan flipped once.","Cook until cheese is melted and bread is golden, about 3-4 minutes per side."]},
+
+{n:"PB&J Sandwich",t:"lunch",cuisine:["American"],diet:["vegetarian","vegan","dairy-free"],time:"quick",nocook:true,avoid:["nut"],
+ing:{Produce:["bread"],Pantry:["peanut butter","jam"]},
+steps:["Spread peanut butter on one slice and jam on the other. This prevents sogginess.","Press together. Cut diagonally if you're feeling fancy or in a mood.","Optionally add banana slices, honey, or granola for a more substantial version."]},
+
+{n:"Nicoise Salad",t:"lunch",cuisine:["French","Mediterranean"],diet:["gluten-free","dairy-free"],time:"medium",nocook:true,avoid:["fish","seafood"],
+ing:{Produce:["green beans","tomatoes","olives","hard-boiled eggs","lettuce","lemon"],Proteins:["canned tuna"],Pantry:["olive oil","dijon mustard"]},
+steps:["Blanch green beans in boiling salted water for 3-4 minutes. Drain and rinse with cold water immediately.","Arrange lettuce as the base. Add green beans, halved tomatoes, olives, quartered hard-boiled eggs, and chunks of drained tuna.","Whisk together olive oil, lemon juice, dijon mustard, salt, and pepper for the dressing.","Drizzle over the salad. Serve at room temperature for best flavor."]},
+
+{n:"Smashed Cucumber Salad",t:"lunch",cuisine:["Asian"],diet:["vegan","gluten-free","dairy-free"],time:"quick",nocook:true,avoid:[],
+ing:{Produce:["cucumbers","garlic","green onion"],Pantry:["soy sauce","rice vinegar","sesame oil","chili oil","sugar"]},
+steps:["Place cucumbers on a cutting board. Smash them with the flat side of a knife or a heavy pan until they crack and split. Then cut into rough chunks — about an inch.","Toss with half a teaspoon of salt, let sit 10 minutes, then squeeze out the excess water.","Make dressing: minced garlic, 2 tbsp soy sauce, 1 tbsp rice vinegar, 1 tbsp sesame oil, a pinch of sugar, chili oil to taste.","Toss cucumbers with dressing and sliced green onion. Serve immediately or let sit for 15 minutes for more flavor."]},
+
+{n:"Loaded Baked Potato",t:"lunch",cuisine:["American"],diet:["vegetarian","gluten-free"],time:"medium",nocook:false,avoid:[],
+ing:{Produce:["russet potato","broccoli","green onion"],Dairy:["butter","sour cream","cheddar"],Pantry:["olive oil","salt"]},
+steps:["Scrub the potato, poke several times with a fork, rub with olive oil and salt. Microwave 5 minutes per side (10 minutes total), or bake at 425°F for 45-60 minutes until tender.","Steam or microwave broccoli florets until tender, about 3-4 minutes.","Split the potato open, push in the sides to open it up, and add a knob of butter.","Load with broccoli, sour cream, shredded cheddar, and sliced green onion."]},
+
+{n:"White Bean & Kale Soup",t:"lunch",cuisine:["Italian","Mediterranean"],diet:["vegetarian","vegan","gluten-free","dairy-free"],time:"medium",nocook:false,avoid:[],
+ing:{Produce:["kale","onion","garlic","lemon"],Pantry:["white beans","broth","olive oil","red pepper flakes"]},
+steps:["Heat olive oil in a pot. Add diced onion and cook until soft, about 5 minutes.","Add minced garlic and a pinch of red pepper flakes, stir for 30 seconds.","Add two cans of rinsed white beans and 4 cups broth. Bring to a simmer.","Add roughly chopped kale and cook 5-7 minutes until tender.","Finish with lemon juice, salt, and pepper. Drizzle more olive oil over each bowl."]},
+
+{n:"Cottage Cheese Bowl",t:"lunch",cuisine:["American"],diet:["vegetarian","gluten-free","low-carb"],time:"quick",nocook:true,avoid:[],
+ing:{Dairy:["cottage cheese"],Produce:["cherry tomatoes","cucumber","avocado"],Pantry:["everything bagel seasoning","olive oil"]},
+steps:["Spoon a generous cup of cottage cheese into a bowl.","Top with halved cherry tomatoes, sliced cucumber, and diced avocado.","Drizzle with olive oil and sprinkle everything bagel seasoning over the top.","Optional: add a soft-boiled egg, smoked salmon, or whatever protein you have."]},
+
+{n:"Vietnamese Spring Rolls",t:"lunch",cuisine:["Asian"],diet:["gluten-free","dairy-free"],time:"medium",nocook:true,avoid:["seafood"],
+ing:{Produce:["rice paper","lettuce","carrot","cucumber","avocado","mint","lime"],Proteins:["shrimp","tofu"],Pantry:["peanut sauce","soy sauce"]},
+steps:["Prep all fillings: cook shrimp or press and slice tofu, julienne carrot and cucumber, slice avocado, pick mint leaves.","Fill a wide shallow bowl with warm water. Submerge one rice paper wrapper for about 15-20 seconds until pliable but not falling apart.","Lay flat on a damp surface. Place fillings in a line in the lower third of the wrapper.","Fold up the bottom edge, fold in the sides, then roll tightly away from you.","Serve immediately with peanut sauce and a squeeze of lime."]},
+
+{n:"Bruschetta",t:"lunch",cuisine:["Italian"],diet:["vegetarian","vegan","dairy-free"],time:"quick",nocook:false,avoid:[],
+ing:{Produce:["tomatoes","basil","garlic","baguette"],Pantry:["olive oil","balsamic","salt"]},
+steps:["Dice tomatoes and toss with torn basil, a drizzle of olive oil, a splash of balsamic, salt, and pepper. Let sit 10 minutes.","Slice baguette at an angle and toast or grill until golden.","Rub each toasted slice with a cut garlic clove while still hot — this makes a huge difference.","Spoon tomato mixture generously over each slice. Eat immediately before they go soggy."]},
+
+{n:"Egg Salad Sandwich",t:"lunch",cuisine:["American"],diet:["vegetarian"],time:"quick",nocook:true,avoid:[],
+ing:{Dairy:["hard-boiled eggs"],Produce:["celery","green onion","bread"],Pantry:["mayo","dijon mustard","paprika"]},
+steps:["Peel and chop hard-boiled eggs into roughly half-inch pieces.","Mix with diced celery, sliced green onion, mayo, a little dijon, salt, pepper, and a pinch of paprika.","Taste and adjust — good egg salad should taste creamy with a little tang.","Pile onto toasted bread or in lettuce cups."]},
+
+{n:"Snack Plate Lunch",t:"lunch",cuisine:["American","Mediterranean"],diet:["vegetarian"],time:"quick",nocook:true,avoid:[],
+ing:{Dairy:["cheese"],Produce:["apple","grapes","carrot sticks","cherry tomatoes"],Pantry:["crackers","hummus","honey"]},
+steps:["Slice apple into wedges, halve grapes, prep carrot sticks.","Arrange everything on a plate or board — cheese, crackers, fruit, vegetables.","Add a ramekin of hummus for dipping.","This is a legitimate lunch. You don't always need to cook something."]},
+
+{n:"Cold Noodle Salad",t:"lunch",cuisine:["Asian"],diet:["vegan","dairy-free"],time:"quick",nocook:true,avoid:[],
+ing:{Produce:["cucumber","carrot","green onion","lime","cilantro"],Pantry:["soba noodles","soy sauce","sesame oil","rice vinegar","sesame seeds"]},
+steps:["Cook soba noodles per package, drain and rinse with cold water until completely cool.","Make dressing: 2 tbsp soy sauce, 1 tbsp sesame oil, 1 tbsp rice vinegar, juice of half a lime.","Toss noodles with julienned carrot, sliced cucumber, green onion, and cilantro.","Pour dressing over, toss well, top with sesame seeds."]},
+
+{n:"French Dip Sandwich",t:"lunch",cuisine:["American","French"],diet:[],time:"medium",nocook:false,avoid:[],
+ing:{Proteins:["roast beef deli meat"],Dairy:["provolone"],Produce:["hoagie roll"],Pantry:["beef broth","Worcestershire sauce","dijon mustard"]},
+steps:["Make the au jus: heat 1 cup beef broth with a splash of Worcestershire sauce in a small pot until simmering. Season with salt and pepper.","Toast the hoagie roll. Spread with a little dijon mustard.","Pile on roast beef and provolone. Broil open-faced for 2-3 minutes until cheese melts.","Close the sandwich and serve with the au jus in a small cup on the side. Dip before every bite."]},
+
+{n:"Tomato & Mozzarella Flatbread",t:"lunch",cuisine:["Italian"],diet:["vegetarian"],time:"quick",nocook:false,avoid:[],
+ing:{Produce:["cherry tomatoes","basil","flatbread"],Dairy:["fresh mozzarella"],Pantry:["olive oil","balsamic glaze"]},
+steps:["Preheat oven to 400°F or get a grill pan hot.","Brush flatbread with olive oil. Top with torn mozzarella and halved cherry tomatoes.","Bake or grill 6-8 minutes until edges are crisp and cheese is melty and slightly golden.","Top with fresh basil and a drizzle of balsamic glaze. Slice and eat right away."]},
+
+{n:"Spicy Tofu Bowl",t:"lunch",cuisine:["Asian"],diet:["vegetarian","vegan","dairy-free","gluten-free"],time:"medium",nocook:false,avoid:[],
+ing:{Produce:["bok choy","green onion","garlic","ginger"],Proteins:["tofu"],Pantry:["gochujang","soy sauce","sesame oil","rice","sesame seeds"]},
+steps:["Press tofu for at least 15 minutes, then cube it. Pan-fry in a little oil over medium-high heat until golden on all sides. Set aside.","Make sauce: mix 1 tbsp gochujang, 2 tbsp soy sauce, 1 tsp sesame oil, 1 tsp minced garlic, 1 tsp grated ginger.","Halve bok choy, sear cut-side down in the same pan for 2-3 minutes.","Serve over rice, top with tofu, bok choy, and sauce. Finish with sliced green onion and sesame seeds."]},
+
+// ── DINNERS ──────────────────────────────────────────────
+{n:"Spaghetti Bolognese",t:"dinner",cuisine:["Italian"],diet:[],time:"medium",nocook:false,avoid:[],
+ing:{Produce:["onion","carrot","celery","garlic","tomatoes"],Proteins:["ground beef"],Pantry:["spaghetti","canned tomatoes","red wine","olive oil"]},
+steps:["Heat olive oil in a heavy pot. Add finely diced onion, carrot, and celery. Cook 8-10 minutes until very soft.","Add minced garlic, then ground beef. Break up the meat and brown well — don't rush this step.","Add a splash of red wine. Let it evaporate mostly, about 2 minutes.","Add a can of crushed tomatoes, a splash of milk, salt, pepper, and a pinch of nutmeg. Simmer on the lowest heat for at least 30 minutes. An hour is better.","Cook spaghetti per package. Toss with sauce. Serve with parmesan."]},
+
+{n:"Chicken Stir Fry",t:"dinner",cuisine:["Asian"],diet:["dairy-free"],time:"quick",nocook:false,avoid:[],
+ing:{Produce:["broccoli","bell pepper","carrot","garlic","ginger","green onion"],Proteins:["chicken breast"],Pantry:["soy sauce","sesame oil","rice"]},
+steps:["Start the rice. Slice chicken breast thin and toss with a pinch of salt and cornstarch if you have it.","Make sauce: 3 tbsp soy sauce, 1 tbsp sesame oil, 1 tsp sugar, a splash of water.","Heat a wok or large pan until very hot. Add oil. Stir fry chicken in a single layer until cooked through, about 3-4 minutes. Remove.","In the same pan, stir fry broccoli, bell pepper, and carrot for 3-4 minutes. Add garlic and ginger for the last minute.","Return chicken, pour sauce over everything, toss. Serve over rice with sliced green onion."]},
+
+{n:"Tacos",t:"dinner",cuisine:["Mexican"],diet:[],time:"quick",nocook:false,avoid:[],
+ing:{Produce:["onion","tomato","lettuce","lime","cilantro","avocado"],Proteins:["ground beef"],Dairy:["cheese","sour cream"],Pantry:["taco shells","cumin","chili powder","salsa"]},
+steps:["Brown ground beef in a pan over medium-high heat, breaking it up as it cooks. Drain excess fat.","Season with 1 tsp cumin, 1 tsp chili powder, salt, and a splash of water. Stir and simmer 2 minutes.","Warm taco shells per package.","Set out toppings: shredded lettuce, diced tomato, shredded cheese, sour cream, salsa, and guacamole or sliced avocado.","Let everyone build their own — that's the real secret to taco night."]},
+
+{n:"Butter Chicken",t:"dinner",cuisine:["Indian"],diet:["gluten-free"],time:"medium",nocook:false,avoid:[],
+ing:{Produce:["onion","garlic","ginger","tomatoes"],Proteins:["chicken thighs"],Dairy:["butter","heavy cream"],Pantry:["garam masala","cumin","paprika","canned tomatoes","rice"]},
+steps:["Cut chicken into chunks. Season with salt, cumin, and a little paprika. Cook in butter over medium-high heat until browned. Remove.","In the same pan, sauté diced onion until golden. Add minced garlic and grated ginger, cook 1 minute. Add 1 tsp garam masala, 1 tsp cumin, 1 tsp paprika.","Add a can of crushed tomatoes. Simmer 10 minutes.","Blend the sauce smooth (optional but recommended). Return to pan with chicken and a generous splash of cream. Simmer 10 more minutes.","Serve over rice with naan if you have it."]},
+
+{n:"Veggie Pasta Primavera",t:"dinner",cuisine:["Italian"],diet:["vegetarian","vegan","dairy-free"],time:"medium",nocook:false,avoid:[],
+ing:{Produce:["zucchini","cherry tomatoes","bell pepper","garlic","basil","lemon"],Pantry:["pasta","olive oil"]},
+steps:["Cook pasta per package until al dente. Reserve a cup of pasta water before draining.","While pasta cooks, heat olive oil in a large pan. Sauté diced zucchini and bell pepper until just tender, about 5 minutes. Add minced garlic for the last minute.","Add halved cherry tomatoes, cook 2 more minutes just until they start to burst.","Add drained pasta to the pan. Toss with vegetables, a splash of pasta water, a squeeze of lemon, and lots of fresh basil. Season well with salt and pepper."]},
+
+{n:"Salmon with Roasted Veg",t:"dinner",cuisine:["American","Mediterranean"],diet:["gluten-free","dairy-free","low-carb"],time:"medium",nocook:false,avoid:["fish","seafood"],
+ing:{Produce:["broccoli","cherry tomatoes","lemon","garlic","asparagus"],Proteins:["salmon fillets"],Pantry:["olive oil","herbs","dijon mustard"]},
+steps:["Preheat oven to 425°F. Toss broccoli and asparagus with olive oil, salt, and pepper on a sheet pan.","Roast vegetables for 12 minutes.","While veg roasts, mix dijon mustard with a little olive oil, garlic, lemon juice, and herbs to make a quick glaze for the salmon.","Push vegetables to the edges. Place salmon in the center, spread glaze on top. Add cherry tomatoes.","Roast everything together another 12-15 minutes until salmon is just cooked through."]},
+
+{n:"Chicken Tikka Masala",t:"dinner",cuisine:["Indian"],diet:["gluten-free"],time:"medium",nocook:false,avoid:[],
+ing:{Produce:["onion","garlic","ginger","tomatoes"],Proteins:["chicken breast"],Dairy:["heavy cream","yogurt"],Pantry:["garam masala","cumin","coriander","paprika","canned tomatoes","rice"]},
+steps:["Marinate chicken: mix yogurt, 1 tsp each of cumin, coriander, and paprika, salt. Coat chicken pieces and marinate at least 30 minutes.","Cook marinated chicken in a hot pan until charred on the outside. Remove.","In the same pan, sauté diced onion until golden. Add garlic, ginger, and 1.5 tsp garam masala. Cook 2 minutes.","Add a can of crushed tomatoes. Simmer 10 minutes. Add heavy cream. Blend smooth or leave chunky.","Return chicken to the sauce. Simmer 10 minutes. Serve over basmati rice."]},
+
+{n:"Lemon Garlic Pasta",t:"dinner",cuisine:["Italian","Mediterranean"],diet:["vegetarian","dairy-free","vegan"],time:"quick",nocook:false,avoid:[],
+ing:{Produce:["garlic","lemon","parsley","cherry tomatoes"],Pantry:["pasta","olive oil","red pepper flakes"]},
+steps:["Cook pasta per package. Reserve a cup of pasta water before draining.","While pasta cooks, heat a generous amount of olive oil in a pan over medium-low heat. Add thinly sliced garlic and a pinch of red pepper flakes. Cook gently until garlic is golden and fragrant — do not burn it.","Add halved cherry tomatoes and cook 2 minutes until they soften.","Add drained pasta, a big squeeze of lemon, and a splash of pasta water. Toss vigorously until a light sauce forms.","Top with chopped parsley, more lemon, and parmesan if you're not keeping it vegan."]},
+
+{n:"Sheet Pan Chicken & Veg",t:"dinner",cuisine:["American","Mediterranean"],diet:["gluten-free","dairy-free","low-carb"],time:"medium",nocook:false,avoid:[],
+ing:{Produce:["broccoli","bell pepper","red onion","garlic","cherry tomatoes"],Proteins:["chicken thighs"],Pantry:["olive oil","Italian seasoning","paprika"]},
+steps:["Preheat oven to 425°F.","Toss chicken thighs with olive oil, 1 tsp Italian seasoning, 1 tsp paprika, salt, and pepper.","Toss vegetables separately with olive oil, salt, and pepper.","Arrange chicken in the center of a sheet pan, vegetables around it.","Roast 30-35 minutes until chicken skin is golden and crispy and vegetables are caramelized. Flip chicken once halfway through."]},
+
+{n:"Beef Stew",t:"dinner",cuisine:["American","French"],diet:["gluten-free","dairy-free"],time:"long",nocook:false,avoid:[],
+ing:{Produce:["potatoes","carrots","onion","celery","garlic"],Proteins:["beef stew meat"],Pantry:["beef broth","tomato paste","red wine","thyme"]},
+steps:["Pat beef dry and season with salt and pepper. Brown in batches in a heavy pot with oil over high heat — don't crowd the pan. Remove.","In the same pot, sauté diced onion and celery until soft. Add garlic and tomato paste, stir 1 minute.","Return beef to pot. Add red wine and let it reduce by half. Add broth, thyme, and bay leaf.","Simmer covered on low heat for 1.5 hours.","Add cubed potatoes and carrots. Simmer uncovered another 30-40 minutes until vegetables are tender and broth is thick. Adjust seasoning."]},
+
+{n:"Mushroom Risotto",t:"dinner",cuisine:["Italian"],diet:["vegetarian","gluten-free"],time:"long",nocook:false,avoid:[],
+ing:{Produce:["mushrooms","onion","garlic","thyme"],Dairy:["butter","parmesan","white wine"],Pantry:["arborio rice","broth","olive oil"]},
+steps:["Heat broth in a separate pot and keep it warm — this is important. Cold broth slows the process.","Sauté sliced mushrooms in butter with thyme until golden. Season and set aside.","In the same pan, sauté diced onion in butter and olive oil. Add arborio rice, stir to coat, toast 1 minute.","Add white wine, stir until absorbed. Add warm broth one ladleful at a time, stirring constantly and adding more only when the last addition is absorbed. This takes about 20-25 minutes. Don't walk away.","Fold in mushrooms, grated parmesan, and a knob of cold butter. Season well. Serve immediately."]},
+
+{n:"Fish Tacos",t:"dinner",cuisine:["Mexican"],diet:["dairy-free"],time:"quick",nocook:false,avoid:["fish","seafood"],
+ing:{Produce:["cabbage","lime","cilantro","avocado","jalapeño"],Proteins:["white fish fillets"],Pantry:["tortillas","cumin","chili powder","mayo"]},
+steps:["Season fish with cumin, chili powder, salt, and a little oil. Cook in a hot pan 3-4 minutes per side until flaky.","Make a quick slaw: shred cabbage, toss with a squeeze of lime and a pinch of salt.","Make chipotle mayo if you want: mix mayo with a little lime juice and chili powder.","Warm tortillas. Build tacos with fish, slaw, avocado slices, jalapeño, cilantro, and a squeeze of lime."]},
+
+{n:"Thai Green Curry",t:"dinner",cuisine:["Asian"],diet:["gluten-free","dairy-free","vegan"],time:"medium",nocook:false,avoid:[],
+ing:{Produce:["bell pepper","zucchini","spinach","garlic","ginger","lime","basil"],Pantry:["green curry paste","coconut milk","rice"]},
+steps:["Start your rice.","Heat a little oil in a pan or wok. Add 2-3 tbsp green curry paste and stir fry for 30 seconds until fragrant.","Pour in a can of coconut milk. Stir until the paste is fully incorporated. Bring to a simmer.","Add sliced bell pepper and zucchini. Simmer 8-10 minutes until tender.","Add spinach and stir until wilted. Season with lime juice, a splash of soy sauce or fish sauce, and salt. Finish with torn basil. Serve over rice."]},
+
+{n:"Homemade Pizza",t:"dinner",cuisine:["Italian"],diet:["vegetarian"],time:"long",nocook:false,avoid:[],
+ing:{Produce:["tomatoes","garlic","basil","bell pepper","onion"],Dairy:["mozzarella"],Pantry:["pizza dough","olive oil"]},
+steps:["Preheat oven to its highest setting — ideally 500-550°F. If you have a pizza stone, put it in now.","Let store-bought dough come to room temperature for 30 minutes. Stretch or roll it out on a floured surface.","Make quick sauce: crush canned tomatoes with a pinch of salt, garlic, and olive oil. No cooking needed.","Top dough with sauce, mozzarella, and whatever toppings you want.","Bake 10-14 minutes until crust is golden and cheese is bubbling and charred in spots."]},
+
+{n:"Chicken Parmesan",t:"dinner",cuisine:["Italian","American"],diet:[],time:"medium",nocook:false,avoid:[],
+ing:{Produce:["garlic","basil","tomatoes"],Proteins:["chicken breast"],Dairy:["mozzarella","parmesan"],Pantry:["breadcrumbs","canned tomatoes","pasta","olive oil"]},
+steps:["Pound chicken breasts to even thickness — about half an inch. Season with salt and pepper.","Set up a breading station: flour, then beaten egg, then seasoned breadcrumbs mixed with parmesan.","Pan-fry in olive oil over medium heat 3-4 minutes per side until golden. Transfer to a baking dish.","Top each piece with marinara sauce, sliced mozzarella, and grated parmesan.","Bake at 400°F for 15-18 minutes until cheese is melted and bubbly. Serve over pasta."]},
+
+{n:"Black Bean Enchiladas",t:"dinner",cuisine:["Mexican"],diet:["vegetarian","vegan","dairy-free"],time:"medium",nocook:false,avoid:[],
+ing:{Produce:["onion","bell pepper","garlic","cilantro","lime"],Dairy:["cheese"],Pantry:["black beans","tortillas","enchilada sauce","cumin"]},
+steps:["Sauté diced onion and bell pepper in oil. Add garlic, cumin, and drained black beans. Season with salt and lime juice. Cook 3-4 minutes.","Warm tortillas to make them pliable. Fill each with a scoop of bean mixture, a sprinkle of cheese. Roll tightly.","Place seam-side down in a baking dish. Pour enchilada sauce over the top. Top with more cheese.","Bake at 375°F for 20 minutes until bubbly and cheese is melted.","Serve topped with cilantro, sour cream, and sliced avocado."]},
+
+{n:"Pad Thai",t:"dinner",cuisine:["Asian"],diet:["dairy-free"],time:"medium",nocook:false,avoid:["seafood"],
+ing:{Produce:["bean sprouts","green onion","lime","garlic"],Proteins:["shrimp","tofu"],Pantry:["rice noodles","fish sauce","tamarind","peanuts","sesame oil"]},
+steps:["Soak rice noodles in warm water for 20-30 minutes until pliable but not fully soft. Drain.","Make sauce: mix 3 tbsp tamarind paste, 2 tbsp fish sauce, 1 tbsp sugar.","Heat oil in a wok over high heat. Cook shrimp or tofu until done. Push to side. Scramble eggs in the empty space.","Add noodles and sauce. Toss everything together over high heat for 2-3 minutes.","Serve topped with bean sprouts, sliced green onion, crushed peanuts, and lime wedges."]},
+
+{n:"Roast Chicken",t:"dinner",cuisine:["American","French"],diet:["gluten-free","dairy-free","low-carb"],time:"long",nocook:false,avoid:[],
+ing:{Produce:["garlic","lemon","rosemary","thyme","onion","carrots"],Proteins:["whole chicken"],Pantry:["olive oil","salt","pepper"]},
+steps:["Take chicken out of the fridge 30 minutes before cooking. Preheat oven to 425°F.","Pat chicken completely dry — this is the key to crispy skin. Season generously inside and out with salt and pepper.","Stuff the cavity with half a lemon, a head of garlic cut in half, and a bundle of fresh herbs. Truss the legs if you want, or don't — it still works.","Rub the outside with olive oil. Place in a roasting pan on top of rough-cut onions and carrots.","Roast 1 to 1.5 hours depending on size. The chicken is done when juices run clear and a thermometer reads 165°F in the thigh. Rest 10 minutes before carving."]},
+
+{n:"Veggie Chili",t:"dinner",cuisine:["American","Mexican"],diet:["vegetarian","vegan","gluten-free","dairy-free"],time:"medium",nocook:false,avoid:[],
+ing:{Produce:["onion","bell pepper","jalapeño","garlic","tomatoes"],Pantry:["black beans","kidney beans","canned tomatoes","chili powder","cumin","broth"]},
+steps:["Heat oil in a large pot. Add diced onion, bell pepper, and jalapeño. Cook 5-6 minutes.","Add minced garlic, 2 tsp chili powder, 1.5 tsp cumin, salt. Stir for 1 minute.","Add two cans of drained beans, a can of diced tomatoes, and a cup of broth.","Simmer uncovered for 20-25 minutes, stirring occasionally, until thickened to your liking.","Taste and adjust seasoning. Serve with sour cream, shredded cheese, and cornbread if you have it."]},
+
+{n:"Shrimp Scampi",t:"dinner",cuisine:["Italian","American"],diet:["gluten-free","dairy-free"],time:"quick",nocook:false,avoid:["seafood","shrimp"],
+ing:{Produce:["garlic","lemon","parsley","cherry tomatoes"],Proteins:["shrimp"],Dairy:["butter"],Pantry:["pasta","white wine","red pepper flakes","olive oil"]},
+steps:["Cook pasta per package. Reserve pasta water.","Pat shrimp dry and season with salt and pepper.","Heat olive oil and butter in a large pan. Add minced garlic and red pepper flakes. Cook 30 seconds.","Add shrimp and cook 1-2 minutes per side until pink. Don't overcook.","Add white wine and let bubble for 1 minute. Add pasta, a splash of pasta water, lemon juice. Toss. Top with parsley."]},
+
+{n:"Moroccan Chicken Tagine",t:"dinner",cuisine:["Middle Eastern","Mediterranean"],diet:["gluten-free","dairy-free"],time:"long",nocook:false,avoid:[],
+ing:{Produce:["onion","garlic","tomatoes","olives","lemon","cilantro"],Proteins:["chicken thighs"],Pantry:["canned tomatoes","chickpeas","ras el hanout","cumin","cinnamon","broth"]},
+steps:["Season chicken thighs with ras el hanout, salt, and pepper. Brown in oil in a heavy pot over medium-high heat. Remove.","Sauté diced onion until golden. Add garlic, 1 tsp cumin, half a tsp cinnamon. Stir 1 minute.","Add canned tomatoes, chickpeas, and a cup of broth. Nestle chicken back in.","Cover and simmer on low heat for 40-45 minutes until chicken is very tender.","Stir in olives, preserved lemon or lemon zest, and fresh cilantro. Serve with couscous or flatbread."]},
+
+{n:"Veggie Stir Fry with Tofu",t:"dinner",cuisine:["Asian"],diet:["vegetarian","vegan","dairy-free"],time:"quick",nocook:false,avoid:[],
+ing:{Produce:["broccoli","snap peas","carrot","garlic","ginger","green onion"],Proteins:["tofu"],Pantry:["soy sauce","sesame oil","rice","sesame seeds"]},
+steps:["Press tofu for 15 minutes, cube it, and cook in oil in a hot pan until golden on all sides. Remove.","Mix sauce: 3 tbsp soy sauce, 1 tbsp sesame oil, 1 tsp sugar, a little cornstarch.","In same pan over high heat, stir fry broccoli and carrots 3 minutes. Add snap peas, garlic, and ginger for 1 more minute.","Return tofu to pan, pour sauce over, toss to coat.","Serve over rice with sesame seeds and sliced green onion."]},
+
+{n:"Spaghetti Carbonara",t:"dinner",cuisine:["Italian"],diet:[],time:"medium",nocook:false,avoid:[],
+ing:{Produce:["garlic"],Proteins:["pancetta","bacon"],Dairy:["eggs","parmesan","pecorino"],Pantry:["spaghetti","black pepper","olive oil"]},
+steps:["Cook spaghetti per package until al dente. Reserve a big cup of pasta water.","While pasta cooks, fry pancetta or bacon in a pan until crispy. Remove from heat.","Whisk together 2 whole eggs, 2 egg yolks, a big handful each of grated parmesan and pecorino, and a generous amount of black pepper.","Working fast: add drained pasta directly to the pancetta pan (off heat). Add egg mixture and toss vigorously, adding pasta water a splash at a time until it becomes a glossy, creamy sauce. The residual heat cooks the eggs — don't use direct heat or you'll get scrambled eggs.","Serve immediately with more cheese and pepper."]},
+
+{n:"Baked Cod with Herbs",t:"dinner",cuisine:["Mediterranean"],diet:["gluten-free","dairy-free","low-carb"],time:"medium",nocook:false,avoid:["fish","seafood"],
+ing:{Produce:["lemon","garlic","tomatoes","parsley"],Proteins:["cod fillets"],Pantry:["olive oil","capers","herbs"]},
+steps:["Preheat oven to 400°F.","Place cod fillets in a baking dish. Season with salt, pepper, and dried herbs.","Mix olive oil, lemon juice, minced garlic, and capers. Pour over the fish.","Top with halved cherry tomatoes.","Bake 15-18 minutes until fish flakes easily with a fork. Top with fresh parsley."]},
+
+{n:"Chicken Fajitas",t:"dinner",cuisine:["Mexican"],diet:["gluten-free","dairy-free"],time:"quick",nocook:false,avoid:[],
+ing:{Produce:["bell pepper","onion","garlic","lime","cilantro"],Proteins:["chicken breast"],Dairy:["cheese","sour cream"],Pantry:["tortillas","cumin","chili powder","olive oil"]},
+steps:["Slice chicken breast and vegetables into strips.","Season chicken with cumin, chili powder, garlic powder, salt, and pepper.","Heat a pan or skillet over high heat until very hot. Cook chicken in a single layer until charred, about 3-4 minutes. Remove.","Cook bell pepper and onion in the same pan until softened and charred at the edges.","Serve in warm tortillas with chicken, peppers, sour cream, cheese, and a squeeze of lime."]},
+
+{n:"Slow Cooker Pulled Pork",t:"dinner",cuisine:["American"],diet:["gluten-free","dairy-free"],time:"long",nocook:false,avoid:[],
+ing:{Produce:["onion","garlic"],Proteins:["pork shoulder"],Pantry:["BBQ sauce","apple cider vinegar","brown sugar","spices","buns"]},
+steps:["Mix a dry rub: brown sugar, paprika, garlic powder, salt, black pepper, cayenne. Rub all over pork shoulder.","Place sliced onion in the bottom of the slow cooker. Set pork on top.","Mix a splash of apple cider vinegar with a few tablespoons of BBQ sauce and pour around the pork.","Cook on low 8-10 hours or high 4-6 hours until the meat pulls apart easily.","Shred with two forks, mix with cooking juices and more BBQ sauce. Serve on buns with coleslaw."]},
+
+{n:"Mushroom Tacos",t:"dinner",cuisine:["Mexican"],diet:["vegetarian","vegan","dairy-free","gluten-free"],time:"quick",nocook:false,avoid:[],
+ing:{Produce:["portobello mushrooms","onion","garlic","lime","cilantro","avocado"],Pantry:["tortillas","cumin","chili powder","olive oil"]},
+steps:["Slice portobello mushrooms into strips. Slice onion.","Cook in a hot pan with olive oil over high heat until mushrooms are golden and slightly crispy. Don't stir too much — let them brown.","Add minced garlic, cumin, and chili powder. Cook 1 more minute. Season with salt and a squeeze of lime.","Warm tortillas. Fill with mushroom mixture, sliced avocado, cilantro, and a squeeze of lime."]},
+
+{n:"Teriyaki Salmon",t:"dinner",cuisine:["Asian"],diet:["gluten-free","dairy-free"],time:"quick",nocook:false,avoid:["fish","seafood"],
+ing:{Produce:["garlic","ginger","sesame seeds","green onion"],Proteins:["salmon fillets"],Pantry:["soy sauce","honey","rice","sesame oil"]},
+steps:["Make teriyaki sauce: mix 3 tbsp soy sauce, 2 tbsp honey, 1 tsp sesame oil, 1 tsp grated ginger, 1 clove minced garlic.","Season salmon with salt and pepper. Cook skin-side down in an oiled pan over medium-high heat for 4 minutes.","Flip and cook 2 more minutes. Pour teriyaki sauce over the salmon. Let it bubble and coat the fish.","Serve over rice, topped with sesame seeds and sliced green onion."]},
+
+{n:"Miso Ramen",t:"dinner",cuisine:["Asian"],diet:["dairy-free"],time:"medium",nocook:false,avoid:[],
+ing:{Produce:["bok choy","green onion","corn","nori","garlic","ginger"],Pantry:["ramen noodles","miso paste","soy sauce","sesame oil","broth"],Dairy:["soft-boiled eggs"]},
+steps:["Make soft-boiled eggs: boil 7 minutes, ice bath immediately for 5 minutes, peel. Optional: marinate in soy sauce and mirin for extra flavor.","Heat broth with garlic and ginger. Simmer 10 minutes.","Whisk miso paste into the broth until fully dissolved. Season with soy sauce and sesame oil. Don't boil after adding miso — it kills the flavor.","Cook ramen noodles and bok choy separately. Drain.","Build bowls: noodles first, then hot broth, then toppings — halved egg, bok choy, corn, nori, green onion, and chili oil."]},
+
+{n:"Spicy Tonkotsu Ramen",t:"dinner",cuisine:["Asian"],diet:["dairy-free"],time:"medium",nocook:false,avoid:[],
+ing:{Produce:["green onion","bamboo shoots","nori","garlic"],Proteins:["chashu pork"],Pantry:["ramen noodles","tonkotsu broth","chili oil","soy sauce"],Dairy:["soft-boiled eggs"]},
+steps:["Warm tonkotsu broth (store-bought is completely fine) with minced garlic and a splash of soy sauce. Simmer 5 minutes.","Make soft-boiled eggs: 7 minutes boiling, 5 minutes ice bath.","Cook ramen noodles per package, drain.","Build bowls: noodles, hot broth poured over, sliced chashu pork (or rotisserie chicken works), halved egg, bamboo shoots, nori, and sliced green onion.","Drizzle chili oil over the top. As much as you can handle."]},
+
+{n:"One-Pot Mac & Cheese",t:"dinner",cuisine:["American"],diet:["vegetarian"],time:"quick",nocook:false,avoid:[],
+ing:{Pantry:["pasta","flour","mustard powder"],Dairy:["milk","cheddar","butter"],Produce:["onion"]},
+steps:["Cook pasta per package. Drain and set aside.","In the same pot, melt butter over medium heat. Add a small diced onion and cook until soft.","Whisk in 2 tbsp flour, stir for 1 minute. Slowly add 2 cups milk, whisking constantly until smooth and thickened.","Add a big handful of shredded cheddar, a pinch of mustard powder, salt, and pepper. Stir until melted.","Add pasta back and stir to coat. Add more cheese. Eat directly from the pot — no judgment."]},
+
+{n:"Classic Meatloaf",t:"dinner",cuisine:["American"],diet:[],time:"long",nocook:false,avoid:[],
+ing:{Proteins:["ground beef"],Produce:["onion","garlic"],Dairy:["eggs","milk"],Pantry:["breadcrumbs","ketchup","Worcestershire sauce"]},
+steps:["Preheat oven to 350°F.","Mix ground beef with finely diced onion, minced garlic, 2 eggs, a splash of milk, half a cup of breadcrumbs, a tablespoon of Worcestershire sauce, salt and pepper. Mix until just combined — don't overwork it.","Shape into a loaf in a baking dish or on a sheet pan.","Mix ketchup with a splash of vinegar and a little brown sugar for the glaze. Spread half over the top.","Bake 45 minutes. Spread remaining glaze on top. Bake another 10-15 minutes. Rest 10 minutes before slicing."]},
+
+{n:"Chicken Pot Pie",t:"dinner",cuisine:["American"],diet:[],time:"long",nocook:false,avoid:[],
+ing:{Proteins:["chicken breast"],Produce:["carrot","peas","onion","celery"],Dairy:["butter","milk"],Pantry:["flour","pie crust","chicken broth"]},
+steps:["Cook and dice chicken breast. Set aside.","Melt butter in a large pot. Sauté diced onion, carrot, and celery until soft, about 6 minutes.","Stir in flour to coat the vegetables. Slowly add chicken broth and milk, whisking until smooth. Bring to a simmer until thickened.","Add chicken and peas. Season with salt, pepper, and thyme. Let filling cool slightly.","Pour into a pie dish, top with pie crust, crimp edges, and cut slits for steam. Bake at 400°F for 30-35 minutes until golden."]},
+
+{n:"Sloppy Joes",t:"dinner",cuisine:["American"],diet:[],time:"quick",nocook:false,avoid:[],
+ing:{Proteins:["ground beef"],Produce:["onion","bell pepper","garlic"],Pantry:["tomato paste","ketchup","Worcestershire sauce","brown sugar","hamburger buns"]},
+steps:["Brown ground beef in a pan, breaking it up. Drain excess fat.","Add diced onion and bell pepper. Cook 4 minutes until soft. Add minced garlic.","Stir in 2 tbsp tomato paste, half a cup of ketchup, 1 tbsp Worcestershire sauce, and 1 tsp brown sugar.","Add a splash of water, stir, and simmer 8-10 minutes until thick and saucy. Season with salt and pepper.","Toast buns. Pile filling high. Have napkins ready."]},
+
+{n:"Beef Burgers",t:"dinner",cuisine:["American"],diet:[],time:"quick",nocook:false,avoid:[],
+ing:{Proteins:["ground beef"],Dairy:["cheese"],Produce:["lettuce","tomato","onion","burger buns"],Pantry:["ketchup","mustard","mayo"]},
+steps:["Divide ground beef into equal portions. Handle as little as possible — overworking makes tough burgers.","Press into patties slightly wider than your buns (they shrink). Make a small indent in the center of each patty to prevent puffing.","Season generously with salt and pepper right before cooking. Cook in a hot pan or grill over high heat — 3-4 minutes per side for medium.","Add cheese in the last minute and cover to melt.","Toast buns. Build your burger and eat immediately."]},
+
+{n:"Grilled Cheese & Tomato Soup",t:"dinner",cuisine:["American"],diet:["vegetarian"],time:"quick",nocook:false,avoid:[],
+ing:{Produce:["bread","tomatoes","onion","garlic"],Dairy:["butter","cheddar","cream"],Pantry:["olive oil","broth"]},
+steps:["For the soup: sauté diced onion in butter until soft. Add garlic. Add a can of crushed tomatoes and a cup of broth. Simmer 15 minutes. Blend smooth. Stir in a splash of cream. Season well.","For the sandwich: butter the outside of each bread slice generously.","Layer cheese (cheddar, gruyere, whatever you have) between the slices.","Cook in a pan over medium-low heat, pressing gently with a spatula. Cook slowly — 3-4 minutes per side — so the cheese fully melts before the outside burns.","Cut diagonally. Dip enthusiastically into soup."]},
+
+{n:"Shakshuka for Dinner",t:"dinner",cuisine:["Middle Eastern","Mediterranean"],diet:["vegetarian","gluten-free","dairy-free"],time:"medium",nocook:false,avoid:[],
+ing:{Produce:["tomatoes","bell pepper","onion","garlic"],Dairy:["eggs"],Pantry:["cumin","paprika","olive oil","canned tomatoes"]},
+steps:["Heat olive oil in a wide skillet. Sauté diced onion and bell pepper 6 minutes until soft.","Add garlic, 1 tsp cumin, 1 tsp paprika, and a pinch of cayenne. Cook 1 minute.","Pour in a can of crushed tomatoes. Simmer 10 minutes until sauce thickens. Season with salt and pepper.","Make wells in the sauce and crack in 4-6 eggs. Cover and cook 5-7 minutes until whites are set.","Serve from the pan with pita or crusty bread for scooping. Don't forget the feta crumble if you have it."]},
+
+{n:"Korean Bibimbap",t:"dinner",cuisine:["Asian"],diet:["vegetarian","dairy-free"],time:"medium",nocook:false,avoid:[],
+ing:{Produce:["spinach","carrot","zucchini","bean sprouts","mushrooms","garlic"],Dairy:["eggs"],Pantry:["rice","sesame oil","gochujang","soy sauce"]},
+steps:["Cook rice. While it cooks, prepare vegetables separately: blanch spinach, sauté julienned carrot and zucchini in sesame oil, cook sliced mushrooms. Season each with garlic, soy sauce, and sesame oil.","Fry eggs sunny side up.","Build bowls: rice first, then arrange each vegetable in sections around the bowl like wedges of a wheel.","Place fried egg in the center.","Top with gochujang sauce, sesame seeds, and a drizzle of sesame oil. Mix everything together before eating."]},
+
+{n:"Chicken Caesar Wrap",t:"dinner",cuisine:["American"],diet:[],time:"quick",nocook:false,avoid:[],
+ing:{Produce:["romaine","cherry tomatoes","lemon"],Proteins:["chicken breast"],Dairy:["parmesan"],Pantry:["tortillas","Caesar dressing"]},
+steps:["Season chicken breast with salt, pepper, and garlic powder. Cook in a pan over medium heat 5-6 minutes per side until cooked through. Rest 5 minutes, then slice.","Chop romaine into pieces. Toss with Caesar dressing, parmesan, and a squeeze of lemon.","Warm tortillas.","Layer salad and chicken on each tortilla. Roll tightly and slice in half."]},
+
+{n:"Baked Ziti",t:"dinner",cuisine:["Italian"],diet:["vegetarian"],time:"medium",nocook:false,avoid:[],
+ing:{Produce:["garlic","onion","basil"],Dairy:["ricotta","mozzarella","parmesan"],Pantry:["ziti pasta","marinara sauce","olive oil"]},
+steps:["Preheat oven to 375°F. Cook ziti per package until slightly underdone — it keeps cooking in the oven.","Make a quick sauce: sauté onion and garlic in olive oil, add marinara, simmer 10 minutes.","Mix ricotta with half the parmesan, salt, pepper, and torn basil.","Combine pasta with sauce. Layer half in a baking dish, dollop ricotta mixture over, add remaining pasta, top with mozzarella and remaining parmesan.","Bake 25-30 minutes until bubbling and golden on top. Rest 5 minutes before serving."]},
+];
+
+// ═══════════════════════════════════════════════════
+// SNACK DATABASE
+// ═══════════════════════════════════════════════════
+const SNACKS = [
+{n:"Cheese & Crackers",tags:["no-cook","quick","savory","classic"],desc:"Stack your favorites — add a smear of mustard or jam",ing:{Dairy:["cheese"],Pantry:["crackers"]}},
+{n:"Apple Slices & Peanut Butter",tags:["no-cook","quick","sweet","classic"],desc:"Creamy, crunchy, satisfying — the classic combo",ing:{Produce:["apple"],Pantry:["peanut butter"]}},
+{n:"Hummus & Veggie Dippers",tags:["no-cook","quick","healthy","savory"],desc:"Carrot sticks, cucumber, bell pepper, whatever's in the crisper",ing:{Produce:["carrot","cucumber","bell pepper"],Pantry:["hummus"]}},
+{n:"Trail Mix",tags:["no-cook","quick","sweet","savory","snacky"],desc:"Nuts, dried fruit, M&Ms if you're treating yourself",ing:{Pantry:["mixed nuts","dried cranberries","chocolate chips"]}},
+{n:"Guacamole & Chips",tags:["no-cook","quick","savory","classic"],desc:"Mash it fresh — salt, lime, done",ing:{Produce:["avocado","lime","cilantro","red onion","jalapeño"],Pantry:["tortilla chips","salt"]}},
+{n:"Caprese Skewers",tags:["no-cook","quick","savory","fancy"],desc:"Cherry tomato, mozzarella, basil on a toothpick — effortlessly impressive",ing:{Produce:["cherry tomatoes","basil"],Dairy:["fresh mozzarella"],Pantry:["balsamic glaze","olive oil"]}},
+{n:"Yogurt with Honey & Berries",tags:["no-cook","quick","sweet","healthy"],desc:"Thick yogurt, a drizzle of honey, whatever fruit you have",ing:{Dairy:["Greek yogurt"],Produce:["berries"],Pantry:["honey"]}},
+{n:"Snack Board",tags:["no-cook","quick","savory","sweet","fancy","classic"],desc:"The low-effort spread: meats, cheese, fruit, crackers, whatever looks good",ing:{Proteins:["salami","prosciutto"],Dairy:["cheese"],Produce:["grapes","apple"],Pantry:["crackers","olives","honey"]}},
+{n:"Popcorn (Seasoned)",tags:["quick","savory","snacky","classic"],desc:"Pop it, season it — nutritional yeast, chili lime, everything bagel, or just butter",ing:{Pantry:["popcorn kernels","butter","salt","nutritional yeast"]}},
+{n:"Deviled Eggs",tags:["classic","savory","protein"],desc:"A forever crowd-pleaser — make a batch and snack all week",ing:{Dairy:["hard-boiled eggs"],Pantry:["mayo","dijon mustard","paprika","vinegar"]}},
+{n:"Banana & Nut Butter",tags:["no-cook","quick","sweet","healthy"],desc:"Peel and dip, or slice and spread — fastest snack ever",ing:{Produce:["banana"],Pantry:["almond butter","peanut butter"]}},
+{n:"Cucumber Rounds with Cream Cheese",tags:["no-cook","quick","savory","healthy"],desc:"Slice thin, top with cream cheese and everything bagel seasoning",ing:{Produce:["cucumber"],Dairy:["cream cheese"],Pantry:["everything bagel seasoning"]}},
+{n:"Edamame",tags:["quick","healthy","savory","protein"],desc:"Steam, salt generously, eat straight from the pod",ing:{Pantry:["frozen edamame","sea salt"]}},
+{n:"Cottage Cheese & Pineapple",tags:["no-cook","quick","sweet","protein","healthy"],desc:"Retro and underrated — creamy, tangy, satisfying",ing:{Dairy:["cottage cheese"],Produce:["pineapple"]}},
+{n:"Rice Cakes with Avocado",tags:["no-cook","quick","healthy","savory"],desc:"Smash avocado, add salt and red pepper — minimal effort, maximum vibes",ing:{Produce:["avocado","lemon"],Pantry:["rice cakes","salt","red pepper flakes"]}},
+{n:"Frozen Grapes",tags:["no-cook","sweet","healthy","snacky"],desc:"Wash, freeze, eat. Nature's sorbet.",ing:{Produce:["grapes"]}},
+{n:"Ants on a Log",tags:["no-cook","quick","sweet","snacky","kids"],desc:"Celery, peanut butter, raisins — a childhood classic that still slaps",ing:{Produce:["celery"],Pantry:["peanut butter","raisins"]}},
+{n:"Soft Pretzel Bites",tags:["baked","savory","classic","snacky"],desc:"Bake from frozen or scratch — dip in mustard or cheese sauce",ing:{Pantry:["frozen pretzel bites","mustard","coarse salt"]}},
+{n:"Smoked Salmon & Crackers",tags:["no-cook","quick","savory","fancy"],desc:"Top with cream cheese, capers, red onion — instant party energy",ing:{Proteins:["smoked salmon"],Dairy:["cream cheese"],Produce:["red onion","capers","lemon"],Pantry:["crackers"]}},
+{n:"Mango Slices with Chili Salt",tags:["no-cook","quick","sweet","snacky"],desc:"Sweet, spicy, salty, juicy — a mood",ing:{Produce:["mango","lime"],Pantry:["chili powder","salt"]}},
+{n:"Energy Bites",tags:["no-cook","sweet","healthy","batch"],desc:"Oats, peanut butter, honey, chocolate chips — roll and refrigerate",ing:{Pantry:["rolled oats","peanut butter","honey","chocolate chips","chia seeds"]}},
+{n:"Cheese Quesadilla Wedges",tags:["quick","savory","classic","kids"],desc:"The best snack is also the easiest — grill, slice, dip in salsa",ing:{Dairy:["cheese"],Pantry:["flour tortillas","salsa"]}},
+{n:"Stuffed Mini Peppers",tags:["no-cook","quick","savory","healthy"],desc:"Fill mini sweet peppers with cream cheese — one bite and you're hooked",ing:{Produce:["mini sweet peppers"],Dairy:["cream cheese"],Pantry:["everything bagel seasoning","chives"]}},
+{n:"Dark Chocolate & Almonds",tags:["no-cook","quick","sweet","healthy","snacky"],desc:"Two bites of chocolate, handful of almonds — done",ing:{Pantry:["dark chocolate","almonds"]}},
+{n:"Bruschetta Bites",tags:["quick","savory","classic","fancy"],desc:"Diced tomato, basil, garlic on toasted bread — always a yes",ing:{Produce:["tomatoes","basil","garlic","baguette"],Pantry:["olive oil","balsamic","salt"]}},
+];
+
+// ═══════════════════════════════════════════════════
+// THEMES
+// ═══════════════════════════════════════════════════
+const THEMES=[
+{icon:"🌮",name:"Taco Tuesday Vibes",desc:"Mexican all week",meals:{Monday:["Huevos Rancheros","Quesadillas","Chicken Fajitas"],Tuesday:["Breakfast Burrito","Snack Plate Lunch","Tacos"],Wednesday:["Scrambled Eggs & Toast","Hummus & Veggie Wrap","Mushroom Tacos"],Thursday:["Avocado Toast","Greek Salad","Black Bean Enchiladas"],Friday:["Shakshuka","Falafel Wrap","Beef Burgers"],Saturday:["Banana Pancakes","Deli Snack Plate","Slow Cooker Pulled Pork"],Sunday:["Huevos Rancheros","Veggie Fried Rice","Veggie Chili"]}},
+{icon:"🍝",name:"Italian Week",desc:"Pasta, pizza & beyond",meals:{Monday:["Frittata","Caprese Salad","Spaghetti Bolognese"],Tuesday:["Egg & Cheese Muffins","Panzanella","Spaghetti Carbonara"],Wednesday:["Avocado Toast","Minestrone Soup","Lemon Garlic Pasta"],Thursday:["Greek Yogurt Parfait","Caesar Salad","Chicken Parmesan"],Friday:["Frittata","Bruschetta","Homemade Pizza"],Saturday:["French Toast","Tomato Basil Soup","Mushroom Risotto"],Sunday:["Veggie Omelette","Minestrone Soup","Baked Ziti"]}},
+{icon:"🥗",name:"Fresh & Light",desc:"Clean, bright, feel-good",meals:{Monday:["Smoothie Bowl","Grain Bowl","Sheet Pan Chicken & Veg"],Tuesday:["Overnight Oats","Smashed Cucumber Salad","Veggie Stir Fry with Tofu"],Wednesday:["Acai Bowl","Greek Salad","Thai Green Curry"],Thursday:["Chia Pudding","Asian Noodle Salad","Korean Bibimbap"],Friday:["Greek Yogurt Parfait","Caprese Salad","Shakshuka for Dinner"],Saturday:["Smoothie Bowl","Cottage Cheese Bowl","Butter Chicken"],Sunday:["Frittata","Grain Bowl","Lemon Garlic Pasta"]}},
+{icon:"🍲",name:"Comfort Food Week",desc:"Cozy, warm, satisfying",meals:{Monday:["Biscuits and Gravy","Tomato Basil Soup","Spaghetti Bolognese"],Tuesday:["French Toast","Chicken Noodle Soup","Butter Chicken"],Wednesday:["Scrambled Eggs & Toast","Baked Potato Soup","Beef Stew"],Thursday:["Banana Pancakes","French Onion Soup","Classic Meatloaf"],Friday:["Cinnamon Oatmeal","Grilled Cheese & Tomato Soup","Chicken Pot Pie"],Saturday:["Veggie Omelette","Loaded Baked Potato","One-Pot Mac & Cheese"],Sunday:["French Toast","Lentil Soup","Roast Chicken"]}},
+{icon:"🌏",name:"Around the World",desc:"New cuisine every day",meals:{Monday:["Shakshuka","Spicy Tofu Bowl","Butter Chicken"],Tuesday:["Frittata","Greek Salad","Pad Thai"],Wednesday:["Huevos Rancheros","Falafel Wrap","Moroccan Chicken Tagine"],Thursday:["Smoothie Bowl","Asian Noodle Salad","Thai Green Curry"],Friday:["Avocado Toast","Hummus & Veggie Wrap","Chicken Tikka Masala"],Saturday:["Banana Pancakes","Vietnamese Spring Rolls","Korean Bibimbap"],Sunday:["Veggie Omelette","Lentil Soup","Spaghetti Carbonara"]}},
+{icon:"⚡",name:"Batch Cook Week",desc:"Cook once, eat all week",meals:{Monday:["Egg & Cheese Muffins","Grain Bowl","Sheet Pan Chicken & Veg"],Tuesday:["Egg & Cheese Muffins","Grain Bowl","Chicken Stir Fry"],Wednesday:["Overnight Oats","Chicken Noodle Soup","Veggie Chili"],Thursday:["Overnight Oats","Veggie Chili","Veggie Stir Fry with Tofu"],Friday:["Cinnamon Oatmeal","Lentil Soup","Miso Ramen"],Saturday:["Banana Pancakes","Cobb Salad","Roast Chicken"],Sunday:["Frittata","Veggie Fried Rice","Slow Cooker Pulled Pork"]}},
+{icon:"🌱",name:"Plant-Based Week",desc:"Fully plant-powered",meals:{Monday:["Smoothie Bowl","Hummus & Veggie Wrap","Veggie Chili"],Tuesday:["Overnight Oats","Grain Bowl","Thai Green Curry"],Wednesday:["Chia Pudding","Asian Noodle Salad","Veggie Stir Fry with Tofu"],Thursday:["Acai Bowl","Smashed Cucumber Salad","Black Bean Enchiladas"],Friday:["Avocado Toast","Falafel Wrap","Veggie Pasta Primavera"],Saturday:["Banana Pancakes","Lentil Soup","Mushroom Tacos"],Sunday:["Shakshuka","Minestrone Soup","Mushroom Risotto"]}},
+{icon:"🏃",name:"Quick & Easy Week",desc:"30 minutes or less",meals:{Monday:["Peanut Butter Banana Toast","Turkey Club Sandwich","Chicken Stir Fry"],Tuesday:["Overnight Oats","Hummus & Veggie Wrap","Lemon Garlic Pasta"],Wednesday:["Greek Yogurt Parfait","Quesadillas","Chicken Fajitas"],Thursday:["Bagel with Cream Cheese","Egg Salad Sandwich","Sloppy Joes"],Friday:["Avocado Toast","Snack Plate Lunch","Grilled Cheese & Tomato Soup"],Saturday:["Scrambled Eggs & Toast","Veggie Fried Rice","Beef Burgers"],Sunday:["Smoothie Bowl","Cold Noodle Salad","Tacos"]}},
+{icon:"🥢",name:"Ramen Week",desc:"A bowl for every night",meals:{Monday:["Cinnamon Oatmeal","Instant Ramen (Upgraded)","Miso Ramen"],Tuesday:["Overnight Oats","Spicy Ramen Bowl","Spicy Tonkotsu Ramen"],Wednesday:["Egg & Cheese Muffins","Cold Noodle Salad","Miso Ramen"],Thursday:["Yogurt & Granola","Asian Noodle Salad","Spicy Tonkotsu Ramen"],Friday:["Scrambled Eggs & Toast","Instant Ramen (Upgraded)","Miso Ramen"],Saturday:["Banana Pancakes","Smashed Cucumber Salad","Korean Bibimbap"],Sunday:["Frittata","Spicy Ramen Bowl","Pad Thai"]}},
+{icon:"🧀",name:"No-Cook Week",desc:"Zero cooking required",meals:{Monday:["Overnight Oats","Snack Plate Lunch","Cheese & Charcuterie Plate"],Tuesday:["Greek Yogurt Parfait","Tuna Salad Sandwich","Deli Snack Plate"],Wednesday:["Chia Pudding","Greek Salad","Caprese Salad"],Thursday:["Acai Bowl","Cottage Cheese Bowl","Avocado & Egg Salad"],Friday:["Smoothie Bowl","Cold Noodle Salad","Hummus & Veggie Wrap"],Saturday:["Muesli","Panzanella","Snack Plate Lunch"],Sunday:["Yogurt & Granola","Smashed Cucumber Salad","Deli Snack Plate"]}},
+{icon:"🍔",name:"Classic American Week",desc:"The greatest hits",meals:{Monday:["Biscuits and Gravy","BLT Sandwich","Classic Meatloaf"],Tuesday:["Scrambled Eggs & Toast","Turkey Club Sandwich","Beef Burgers"],Wednesday:["French Toast","Tomato Basil Soup","Grilled Cheese & Tomato Soup"],Thursday:["Banana Pancakes","Loaded Baked Potato","Chicken Pot Pie"],Friday:["Bagel with Cream Cheese","Cobb Salad","Sloppy Joes"],Saturday:["Biscuits and Gravy","BLT Sandwich","One-Pot Mac & Cheese"],Sunday:["Veggie Omelette","Chicken Noodle Soup","Roast Chicken"]}},
+];
+
+const PANTRY_CATS={
+  "Proteins":["Eggs","Canned tuna","Canned beans","Chicken breast","Ground beef","Tofu","Canned chickpeas","Lentils"],
+  "Grains & Pasta":["Pasta","Rice","Oats","Bread","Tortillas","Ramen noodles","Rice noodles"],
+  "Pantry Staples":["Olive oil","Soy sauce","Canned tomatoes","Broth","Coconut milk","Peanut butter","Honey","Maple syrup"],
+  "Spices & Herbs":["Salt","Black pepper","Cumin","Paprika","Chili powder","Garlic powder","Oregano","Cinnamon","Garam masala"],
+  "Produce Staples":["Onions","Garlic","Lemons","Limes","Carrots","Potatoes","Tomatoes"]
+};
+
+const PREP_TASKS=[
+  {task:"Cook a big pot of grains",time:"20 min",helps:"Grain bowls, lunches, sides all week",trigger:["rice","grain","bowl","bibimbap","fried rice"]},
+  {task:"Batch cook chicken",time:"30 min",helps:"Salads, wraps, stir fries, soups",trigger:["chicken","stir fry","caesar","cobb","wrap"]},
+  {task:"Hard-boil a batch of eggs",time:"15 min",helps:"Breakfasts, salads, snacks all week",trigger:["egg","frittata","omelette","cobb","deviled"]},
+  {task:"Wash and chop vegetables",time:"25 min",helps:"All week — stir fries, soups, salads",trigger:["stir fry","soup","salad","roast","curry","veg"]},
+  {task:"Make overnight oats jars",time:"10 min",helps:"Grab-and-go breakfasts",trigger:["oat","overnight"]},
+  {task:"Prep salad greens",time:"10 min",helps:"Any salad or wrap lunch",trigger:["salad","wrap","lettuce","cobb","caesar"]},
+  {task:"Batch cook sauce or soup",time:"35 min",helps:"Pasta nights and quick lunches",trigger:["pasta","soup","bolognese","sauce","tomato","minestrone"]},
+  {task:"Marinate proteins overnight",time:"10 min active",helps:"Chicken, fish, tofu dishes",trigger:["chicken","tikka","fajita","teriyaki","masala","tagine"]},
+  {task:"Pre-cook and slice potatoes",time:"20 min",helps:"Soups, roasts, sides",trigger:["potato","stew","roast"]},
+  {task:"Blend and freeze smoothie bases",time:"15 min",helps:"Fast breakfasts all week",trigger:["smoothie","acai","bowl"]},
+  {task:"Cook dried beans or lentils",time:"55 min (mostly hands-off)",helps:"Curries, soups, chili, tacos",trigger:["bean","lentil","chili","curry","taco","enchilada"]},
+  {task:"Roast a tray of vegetables",time:"35 min",helps:"Bowls, sides, sheet pan dinners",trigger:["roast","sheet pan","bowl","veg","broccoli"]},
+  {task:"Prepare chia pudding jars",time:"10 min",helps:"Easy no-fuss breakfasts",trigger:["chia","pudding"]},
+  {task:"Make a big batch of dressing",time:"10 min",helps:"Salads and bowls all week",trigger:["salad","bowl","poke","grain","caesar"]},
+  {task:"Cook ramen broth and toppings",time:"30 min",helps:"Quick ramen bowls all week",trigger:["ramen","miso","tonkotsu","noodle"]},
+];
+
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+const DAYS=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+const MEALS=["Breakfast","Lunch","Dinner"];
+const DAY_COLORS=['#F27C38','#F4C542','#FF69B4','#A6D76A','#2E7D73','#F27C38','#F4C542'];
+const DAY_TEXT=['#fff','#1A1A1A','#fff','#1A1A1A','#fff','#fff','#1A1A1A'];
+let weekOffset=0;
+let activeRecipeKey=null;
+let favFilter='all';
+let activeSnackFilter='all';
+
+const ld=k=>{try{return JSON.parse(localStorage.getItem(k)||'null');}catch{return null;}};
+const sv=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+const wk=(off=0)=>{const d=new Date();d.setDate(d.getDate()-d.getDay()+1+off*7);return d.toISOString().slice(0,10);};
+const getMeals=()=>ld('wmp_meals_'+wk(weekOffset))||{};
+const setMeals=d=>sv('wmp_meals_'+wk(weekOffset),d);
+const getProf=()=>ld('wmp_profile')||{};
+const getPantry=()=>ld('wmp_pantry')||{};
+const getFavs=()=>ld('wmp_favs')||[];
+function esc(s){return(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+// ═══════════════════════════════════════════════════
+// AVOID — checks name AND ingredients AND tagged avoids
+// ═══════════════════════════════════════════════════
+function mealAllowed(meal, avoidList){
+  if(!avoidList.length) return true;
+  // Check meal name
+  const nameLower = meal.n.toLowerCase();
+  if(avoidList.some(a=>nameLower.includes(a))) return false;
+  // Check meal's own avoid tags
+  if(meal.avoid && meal.avoid.some(a=>avoidList.includes(a))) return false;
+  // Check ingredients
+  const allIngs = Object.values(meal.ing||{}).flat().map(i=>i.toLowerCase());
+  if(avoidList.some(a=>allIngs.some(i=>i.includes(a)))) return false;
+  return true;
+}
+
+// ═══════════════════════════════════════════════════
+// WEEK NAV & TABS
+// ═══════════════════════════════════════════════════
+function shiftWeek(d){weekOffset+=d;updateWeekLabel();buildGrid();updateProgress();}
+function updateWeekLabel(){
+  const pos=['This Week','Next Week','2 Weeks Out','3 Weeks Out'];
+  const neg=['This Week','Last Week','2 Weeks Ago','3 Weeks Ago'];
+  document.getElementById('weekLabel').textContent=weekOffset>=0?(pos[weekOffset]||'+'+weekOffset+' wks'):(neg[-weekOffset]||weekOffset+' wks ago');
+}
+function openTab(name,btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+  if(name==='planner') buildGrid();
+  if(name==='shopping'){buildPantryUI();}
+  if(name==='snacks'){buildSnacks();}
+  if(name==='favorites'){renderFavList();}
+  if(name==='profile'){loadProfileUI();}
+}
+
+// ═══════════════════════════════════════════════════
+// SKIP LOGIC
+// ═══════════════════════════════════════════════════
+function isSkipped(D,day,meal){
+  const key=`${day}|${meal}|skip`;
+  if(key in D) return D[key];
+  return (getProf().skipDefaults||[]).includes(meal);
+}
+function toggleSkip(day,meal){
+  const D=getMeals();
+  D[`${day}|${meal}|skip`]=!isSkipped(D,day,meal);
+  setMeals(D); buildGrid(); updateProgress();
+}
+
+// ═══════════════════════════════════════════════════
+// GENERATE WEEK
+// ═══════════════════════════════════════════════════
+function generateWeek(){
+  const prof=getProf();
+  const mood=document.getElementById('moodInput').value.trim().toLowerCase();
+  const diet=prof.diet||[];
+  const cuisines=prof.cuisines||[];
+  const avoidList=(prof.avoid||'').toLowerCase().split(',').map(s=>s.trim()).filter(Boolean);
+  const skipDefaults=prof.skipDefaults||[];
+  const nocookMode=mood.includes('no-cook')||mood.includes('nocook')||mood.includes('no cook');
+
+  function score(meal,usedNames){
+    let s=0;
+    if(cuisines.length&&cuisines.some(c=>meal.cuisine.includes(c))) s+=3;
+    if(mood){
+      if(mood.includes('quick')&&meal.time==='quick') s+=4;
+      if(mood.includes('comfort')&&meal.tags&&meal.tags.includes('comfort')) s+=4;
+      if((mood.includes('healthy')||mood.includes('light'))&&(meal.tags&&(meal.tags.includes('healthy')||meal.tags.includes('fresh')))) s+=4;
+      if(mood.includes('batch')&&meal.tags&&meal.tags.includes('batch')) s+=3;
+      if(nocookMode&&meal.nocook) s+=8;
+      if(mood.includes('ramen')&&meal.n.toLowerCase().includes('ramen')) s+=6;
+      if(mood.includes('classic')&&meal.tags&&meal.tags.includes('classic')) s+=4;
+      ['italian','mexican','asian','vegetarian','indian','mediterranean','french','american'].forEach(kw=>{
+        if(mood.includes(kw)&&(meal.cuisine.map(c=>c.toLowerCase()).some(c=>c.includes(kw))||meal.diet.includes(kw))) s+=5;
+      });
+    }
+    if((prof.time||'medium')==='quick'&&meal.time==='quick') s+=2;
+    if(usedNames.has(meal.n)) s-=10;
+    s+=Math.random()*1.5;
+    return s;
+  }
+
+  const D=getMeals();
+  const usedNames=new Set();
+  DAYS.forEach(day=>{
+    MEALS.forEach(meal=>{
+      if(skipDefaults.includes(meal)) return;
+      const type=meal.toLowerCase()==='breakfast'?'breakfast':meal.toLowerCase()==='lunch'?'lunch':'dinner';
+      const pool=DB.filter(m=>m.t===type&&mealAllowed(m,avoidList)&&(diet.length?diet.every(d=>m.diet.includes(d)):true));
+      if(!pool.length) return;
+      const pick=pool.slice().sort((a,b)=>score(b,usedNames)-score(a,usedNames))[0];
+      D[`${day}|${meal}`]=pick.n;
+      usedNames.add(pick.n);
+    });
+  });
+  setMeals(D); buildGrid(); updateProgress();
+  const al=document.getElementById('genAlert');
+  al.className='alert alert-ok';
+  al.textContent='✅ Your week is planned! Scroll down to review and tweak any meals.';
+  al.classList.remove('hidden');
+  setTimeout(()=>al.classList.add('hidden'),4000);
+}
+
+// Per-slot suggestions
+function openSuggestPanel(k,day,meal){
+  document.querySelectorAll('.suggest-panel').forEach(p=>{if(p.id!=='sp_'+k.replace(/[|]/g,'_'))p.classList.remove('open');});
+  document.querySelectorAll('.fav-panel').forEach(p=>p.classList.remove('open'));
+  const prof=getProf();
+  const diet=prof.diet||[];
+  const avoidList=(prof.avoid||'').toLowerCase().split(',').map(s=>s.trim()).filter(Boolean);
+  const type=meal.toLowerCase()==='breakfast'?'breakfast':meal.toLowerCase()==='lunch'?'lunch':'dinner';
+  const pool=DB.filter(m=>m.t===type&&mealAllowed(m,avoidList)&&(diet.length?diet.every(d=>m.diet.includes(d)):true));
+  const picks=pool.sort(()=>Math.random()-0.5).slice(0,8);
+  const panel=document.getElementById('sp_'+k.replace(/[|]/g,'_'));
+  if(!panel) return;
+  panel.innerHTML=`<div style="font-size:0.73rem;font-weight:700;color:var(--muted);margin-bottom:4px;">💡 SUGGESTIONS — tap to use</div>
+    <div class="chips-wrap">${picks.map(p=>`<div class="chip" onclick="useSugg('${k}','${esc(p.n)}')">${p.n}</div>`).join('')}</div>`;
+  panel.classList.toggle('open');
+}
+
+// Favorites swap panel
+function openFavPanel(k,day,meal){
+  document.querySelectorAll('.fav-panel').forEach(p=>{if(p.id!=='fp_'+k.replace(/[|]/g,'_'))p.classList.remove('open');});
+  document.querySelectorAll('.suggest-panel').forEach(p=>p.classList.remove('open'));
+  const favs=getFavs();
+  const mealType=meal.toLowerCase();
+  const panel=document.getElementById('fp_'+k.replace(/[|]/g,'_'));
+  const nudge=document.getElementById('fn_'+k.replace(/[|]/g,'_'));
+  if(!panel) return;
+  if(!favs.length){
+    panel.innerHTML=`<div style="font-size:0.8rem;color:var(--muted);">No favorites yet — add some in the ⭐ Favorites tab!</div>`;
+    panel.classList.toggle('open'); return;
+  }
+  const filtered=favs.filter(f=>f.cat==='any'||f.cat===mealType);
+  const all=filtered.length?filtered:favs;
+  panel.innerHTML=`<div style="font-size:0.73rem;font-weight:700;color:var(--muted);margin-bottom:4px;">⭐ YOUR FAVORITES — tap to swap</div>
+    <div class="chips-wrap">${all.map((f,i)=>`<div class="fav-chip" onclick="swapFav('${k}','${esc(f.name)}','${k.replace(/[|]/g,'_')}')">${f.name}</div>`).join('')}</div>`;
+  panel.classList.toggle('open');
+  if(nudge) nudge.style.display='none';
+}
+
+function useSugg(k,val){const D=getMeals();D[k]=val;setMeals(D);buildGrid();}
+function swapFav(k,val,safeK){
+  const D=getMeals(); D[k]=val;
+  // Restore saved recipe URL from this favorite if it has one
+  const favs=getFavs();
+  const fav=favs.find(f=>f.name===val);
+  if(fav&&fav.url) D[k+'|url']=fav.url;
+  setMeals(D); buildGrid();
+  // Show nudge after rebuild
+  setTimeout(()=>{
+    const nudge=document.getElementById('fn_'+safeK);
+    if(nudge){
+      nudge.style.display='block';
+      nudge.querySelector('.nudge-meal-name').textContent=val;
+    }
+  },50);
+}
+function jumpToExtras(safeK){
+  const inp=document.getElementById('ex_'+safeK);
+  if(inp){inp.focus();inp.scrollIntoView({behavior:'smooth',block:'center'});}
+  const fp=document.getElementById('fp_'+safeK);
+  if(fp) fp.classList.remove('open');
+}
+
+// ═══════════════════════════════════════════════════
+// GRID
+// ═══════════════════════════════════════════════════
+function buildGrid(){
+  const D=getMeals();
+  document.getElementById('dayGrid').innerHTML=DAYS.map((day,di)=>{
+    const dc=DAY_COLORS[di],dt=DAY_TEXT[di];
+    const lft=D['lft_'+di];
+    return `<div class="day-card">
+      <div class="day-header" style="background:${dc};">
+        <span class="day-name" style="color:${dt};">${day}</span>
+        <div style="display:flex;gap:5px;align-items:center;">
+          ${lft?`<span class="lft-badge">♻️ Leftovers</span>`:''}
+          <button class="icon-btn" title="Mark leftovers" onclick="toggleLft(${di})" style="color:${dt};font-size:0.85rem;">♻️</button>
+        </div>
+      </div>
+      <div class="day-body" style="${lft?'opacity:0.42;pointer-events:none':''}">
+        ${MEALS.map((meal,mi)=>{
+          const k=`${day}|${meal}`;
+          const safeK=k.replace(/[|]/g,'_');
+          const val=D[k]||'';
+          const url=D[k+'|url']||'';
+          const nut=D[k+'|nut']||'';
+          const extras=D[k+'|extras']||'';
+          const skipped=isSkipped(D,day,meal);
+          const rowBg=mi%2===0?'#ffffff':'#fffaf3';
+          return `<div class="meal-row${skipped?' skipped':''}" style="background:${rowBg};">
+            <div class="meal-label-wrap">
+              <button class="skip-toggle" title="${skipped?'Enable':'Skip'}" onclick="toggleSkip('${day}','${meal}')">${skipped?'＋':'－'}</button>
+              <span class="meal-label">${meal}</span>
+            </div>
+            <div class="meal-main">
+              <div class="meal-input-row">
+                <input id="${safeK}" value="${esc(val)}" oninput="updMeal('${k}',this.value)"
+                  placeholder="What's for ${meal.toLowerCase()}?" ${skipped?'tabindex="-1"':''} />
+                <button class="icon-btn" title="Suggestions" onclick="openSuggestPanel('${k}','${day}','${meal}')">💡</button>
+                <button class="icon-btn" title="My Favorites" onclick="openFavPanel('${k}','${day}','${meal}')">⭐</button>
+                ${(()=>{const dbEntry=DB.find(m=>m.n===val);return (val&&dbEntry&&dbEntry.steps)?`<button class="icon-btn" title="Preview recipe" onclick="openPreviewModal('${esc(val)}','${k}')">📋</button>`:''})()}
+                <button class="icon-btn" title="Recipe link" onclick="openRecipeModal('${k}')">🔗</button>
+              </div>
+              ${url?`<a href="${esc(url)}" target="_blank" class="recipe-link">📖 View recipe →</a>`:''}
+              ${val?`<div class="nut-bar">
+                <button class="nut-btn${nut==='light'?' nl':''}" onclick="setNut('${k}','light')">🥗 Light</button>
+                <button class="nut-btn${nut==='medium'?' nm':''}" onclick="setNut('${k}','medium')">🍽 Medium</button>
+                <button class="nut-btn${nut==='hearty'?' nh':''}" onclick="setNut('${k}','hearty')">🔥 Hearty</button>
+              </div>`:''}
+              <div class="extras-row">
+                <label>+ Ingredients / extras for shopping list</label>
+                <input class="extras-input" id="ex_${safeK}" value="${esc(extras)}"
+                  oninput="updExtras('${k}',this.value)"
+                  placeholder="e.g. heavy cream, paper towels, dog food — comma-separated"
+                  ${skipped?'tabindex="-1"':''} />
+              </div>
+              <div class="suggest-panel" id="sp_${safeK}"></div>
+              <div class="fav-panel suggest-panel" id="fp_${safeK}"></div>
+              <div class="fav-nudge" id="fn_${safeK}">
+                ⭐ You swapped in <strong class="nudge-meal-name"></strong> — don't forget to add any ingredients you'll need!
+                <a onclick="jumpToExtras('${safeK}')">Add to extras →</a>
+              </div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+  updateProgress();
+}
+
+function updMeal(k,v){const D=getMeals();D[k]=v;setMeals(D);updateProgress();}
+function updExtras(k,v){const D=getMeals();D[k+'|extras']=v;setMeals(D);}
+function setNut(k,v){const D=getMeals();D[k+'|nut']=v;setMeals(D);buildGrid();}
+function toggleLft(di){const D=getMeals();D['lft_'+di]=!D['lft_'+di];setMeals(D);buildGrid();}
+
+function updateProgress(){
+  const D=getMeals();let n=0;
+  DAYS.forEach(d=>MEALS.forEach(m=>{if(!isSkipped(D,d,m)&&D[`${d}|${m}`])n++;}));
+  const possible=DAYS.reduce((acc,d)=>acc+MEALS.filter(m=>!isSkipped(D,d,m)).length,0);
+  const pct=possible?Math.round(n/possible*100):0;
+  document.getElementById('progFill').style.width=pct+'%';
+  document.getElementById('progLabel').textContent=`${n} of ${possible} active meals planned this week`;
+}
+
+function copyWeek(){
+  const D=getMeals();let t='WEEKLY MEAL PLAN\n';
+  DAYS.forEach(d=>{t+='\n'+d.toUpperCase()+'\n';MEALS.forEach(m=>{if(!isSkipped(D,d,m))t+='  '+m+': '+(D[`${d}|${m}`]||'—')+'\n';});});
+  navigator.clipboard.writeText(t).then(()=>toast('📋 Week copied!'),()=>alert('Copy failed'));
+}
+function clearWeek(){if(!confirm('Clear all meals for this week?'))return;setMeals({});buildGrid();}
+function loadPrevWeek(){
+  const prev=ld('wmp_meals_'+wk(weekOffset-1));
+  if(!prev||!Object.keys(prev).length){toast('No meals saved for last week.');return;}
+  if(!confirm('Load last week\'s meals?'))return;
+  const D=getMeals();
+  DAYS.forEach(d=>MEALS.forEach(m=>{const k=`${d}|${m}`;if(prev[k])D[k]=prev[k];}));
+  setMeals(D);buildGrid();toast('↩️ Last week loaded!');
+}
+
+// ═══════════════════════════════════════════════════
+// THEMES — fix: always rebuild grid immediately
+// ═══════════════════════════════════════════════════
+function buildThemes(){
+  document.getElementById('themeGrid').innerHTML=THEMES.map((t,i)=>
+    `<div class="theme-card" onclick="applyTheme(${i},this)">
+      <div class="theme-icon">${t.icon}</div>
+      <div class="theme-name">${t.name}</div>
+      <div class="theme-desc">${t.desc}</div>
+    </div>`).join('');
+}
+function applyTheme(i,el){
+  if(!confirm(`Apply "${THEMES[i].name}" to this week?`))return;
+  const D=getMeals();
+  DAYS.forEach(day=>{const m=THEMES[i].meals[day];if(m)MEALS.forEach((meal,mi)=>{if(m[mi])D[`${day}|${meal}`]=m[mi];});});
+  setMeals(D);
+  // Rebuild planner grid immediately regardless of active tab
+  buildGrid();
+  updateProgress();
+  document.querySelectorAll('.theme-card').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  const al=document.getElementById('themeAlert');
+  al.innerHTML=`✅ "${THEMES[i].name}" applied! Your planner is ready. <button class="btn-pink" style="margin-left:8px;padding:6px 14px;font-size:0.85rem;" onclick="goToPlanner()">Go to Planner →</button>`;
+  al.classList.remove('hidden');
+}
+function goToPlanner(){
+  document.getElementById('tbPlanner').click();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ═══════════════════════════════════════════════════
+// SHOPPING LIST
+// ═══════════════════════════════════════════════════
+function buildShopList(){
+  const D=getMeals();const pantry=getPantry();const saved=ld('wmp_shop')||{};
+  const sections={};
+  function addIng(sec,items){if(!sections[sec])sections[sec]=new Set();items.forEach(i=>sections[sec].add(i));}
+  DAYS.forEach(day=>MEALS.forEach(meal=>{
+    if(isSkipped(D,day,meal)) return;
+    const mn=D[`${day}|${meal}`];if(!mn) return;
+    const entry=DB.find(m=>m.n===mn);
+    if(entry&&entry.ing){Object.entries(entry.ing).forEach(([sec,items])=>{items.forEach(item=>{if(!pantry[item])addIng(sec,[item]);});});}
+  }));
+  DAYS.forEach(day=>MEALS.forEach(meal=>{
+    const extras=D[`${day}|${meal}|extras`];
+    if(!extras||!extras.trim()) return;
+    extras.split(',').map(s=>s.trim()).filter(Boolean).forEach(item=>{if(!pantry[item])addIng('Your Extras',[item]);});
+  }));
+  // snack items added to list
+  const snackExtras=ld('wmp_snack_extras')||[];
+  snackExtras.forEach(item=>{if(!pantry[item])addIng('Snacks',[item]);});
+
+  const ORDER=['Produce','Proteins','Dairy','Pantry','Spices & Herbs','Frozen','Bakery & Bread','Snacks','Your Extras','Other'];
+  const ICONS={Produce:'🥦',Proteins:'🥩',Dairy:'🥛',Pantry:'🫙','Spices & Herbs':'🌿',Frozen:'❄️','Bakery & Bread':'🍞',Snacks:'🍿','Your Extras':'✏️',Other:'🛒'};
+  let html='';let anyItems=false;
+  ORDER.forEach(sec=>{
+    if(!sections[sec]||!sections[sec].size) return;
+    anyItems=true;
+    html+=`<div class="shop-section"><div class="shop-section-head">${ICONS[sec]||'•'} ${sec}</div>`;
+    [...sections[sec]].sort().forEach(item=>{
+      const checked=saved[item]||false;
+      const id='shi_'+Math.random().toString(36).slice(2,9);
+      html+=`<div class="shop-item${checked?' done':''}" id="${id}">
+        <input type="checkbox" ${checked?'checked':''} onchange="toggleShop('${esc(item)}',this.checked,'${id}')" />
+        <span>${esc(item)}</span>
+        <button class="del-btn" onclick="this.closest('.shop-item').remove()">✕</button>
+      </div>`;
+    });
+    html+='</div>';
+  });
+  if(!anyItems) html='<div class="alert alert-info">No meals planned yet — add some meals and try again.</div>';
+  document.getElementById('shopList').innerHTML=html;
+  document.getElementById('shopState').classList.add('hidden');
+  document.getElementById('shopListWrap').classList.remove('hidden');
+}
+function toggleShop(item,checked,rowId){const s=ld('wmp_shop')||{};s[item]=checked;sv('wmp_shop',s);document.getElementById(rowId)?.classList.toggle('done',checked);}
+function clearCheckedItems(){document.querySelectorAll('.shop-item.done').forEach(el=>el.remove());}
+function addCustomItem(){
+  const input=document.getElementById('customItemInput');
+  const val=input.value.trim();if(!val)return;
+  let list=document.getElementById('shopList');
+  let extSec=list.querySelector('[data-extras]');
+  if(!extSec){extSec=document.createElement('div');extSec.className='shop-section';extSec.setAttribute('data-extras','1');extSec.innerHTML='<div class="shop-section-head">✏️ Your Extras</div>';list.appendChild(extSec);}
+  const id='shi_'+Math.random().toString(36).slice(2,9);
+  const div=document.createElement('div');div.className='shop-item';div.id=id;
+  div.innerHTML=`<input type="checkbox" onchange="this.closest('.shop-item').classList.toggle('done',this.checked)" /><span>${esc(val)}</span><button class="del-btn" onclick="this.closest('.shop-item').remove()">✕</button>`;
+  extSec.appendChild(div);input.value='';input.focus();
+  document.getElementById('shopListWrap').classList.remove('hidden');
+}
+function copyShopList(){
+  const items=[...document.querySelectorAll('.shop-item span')].map(s=>s.textContent);
+  navigator.clipboard.writeText(items.map(i=>'• '+i).join('\n')).then(()=>toast('📋 List copied!'));
+}
+
+// ═══════════════════════════════════════════════════
+// PANTRY
+// ═══════════════════════════════════════════════════
+function buildPantryUI(){
+  const saved=getPantry();let html='';
+  Object.entries(PANTRY_CATS).forEach(([cat,items])=>{
+    html+=`<div class="field-group"><label>${cat}</label><div class="check-group">`;
+    items.forEach(item=>{html+=`<div class="check-chip${saved[item]?' on':''}" onclick="togglePantry('${item}',this)">${item}</div>`;});
+    html+='</div></div>';
+  });
+  document.getElementById('pantryUI').innerHTML=html;
+}
+function togglePantry(item,el){const p=getPantry();p[item]=!p[item];sv('wmp_pantry',p);el.classList.toggle('on',p[item]);}
+
+// ═══════════════════════════════════════════════════
+// SNACKS
+// ═══════════════════════════════════════════════════
+function buildSnacks(){
+  // Build filter buttons
+  const allTags=['all','no-cook','quick','healthy','savory','sweet','snacky','classic','fancy','protein','kids','batch'];
+  document.getElementById('snackFilters').innerHTML=allTags.map(t=>
+    `<div class="snack-filter${t===activeSnackFilter?' active':''}" onclick="setSnackFilter('${t}',this)">${t==='all'?'🍿 All':t}</div>`).join('');
+  renderSnacks();
+}
+function setSnackFilter(tag,el){
+  activeSnackFilter=tag;
+  document.querySelectorAll('.snack-filter').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderSnacks();
+}
+function renderSnacks(){
+  const added=ld('wmp_snack_added')||{};
+  const filtered=activeSnackFilter==='all'?SNACKS:SNACKS.filter(s=>s.tags.includes(activeSnackFilter));
+  document.getElementById('snackGrid').innerHTML=filtered.map((s,i)=>{
+    const isAdded=added[s.n];
+    return `<div class="snack-card">
+      <div class="snack-name">${s.n}</div>
+      <div class="snack-desc">${s.desc}</div>
+      <div class="snack-tags">${s.tags.map(t=>`<span class="snack-tag">${t}</span>`).join('')}</div>
+      <button class="snack-add-btn${isAdded?' added':''}" onclick="addSnackToList('${esc(s.n)}',${SNACKS.indexOf(s)},this)">
+        ${isAdded?'✅ Added to shopping list':'🛒 Add ingredients to list'}
+      </button>
+    </div>`;
+  }).join('');
+}
+function addSnackToList(name,idx,btn){
+  const snack=SNACKS[idx];
+  const extras=ld('wmp_snack_extras')||[];
+  const allIngs=Object.values(snack.ing||{}).flat();
+  allIngs.forEach(item=>{if(!extras.includes(item))extras.push(item);});
+  sv('wmp_snack_extras',extras);
+  const added=ld('wmp_snack_added')||{};
+  added[name]=true; sv('wmp_snack_added',added);
+  btn.textContent='✅ Added to shopping list';
+  btn.classList.add('added');
+  const al=document.getElementById('snackAddedAlert');
+  al.classList.remove('hidden');
+  setTimeout(()=>al.classList.add('hidden'),3000);
+}
+
+// ═══════════════════════════════════════════════════
+// FAVORITES
+// ═══════════════════════════════════════════════════
+function addFavorite(nameVal,catVal,notesVal,urlVal){
+  const name=(nameVal||document.getElementById('favName').value).trim();
+  if(!name){toast('Give your favorite a name!');return;}
+  const cat=catVal||document.getElementById('favCat').value;
+  const notes=notesVal||document.getElementById('favNotes').value.trim();
+  const url=urlVal||document.getElementById('favUrl').value.trim();
+  const favs=getFavs();
+  if(favs.some(f=>f.name.toLowerCase()===name.toLowerCase())){toast('Already in your favorites!');return;}
+  favs.push({name,cat,notes,url,id:Date.now()});
+  sv('wmp_favs',favs);
+  document.getElementById('favName').value='';
+  document.getElementById('favNotes').value='';
+  document.getElementById('favUrl').value='';
+  renderFavList();
+  toast('⭐ Saved to favorites!');
+}
+function deleteFav(id){
+  const favs=getFavs().filter(f=>f.id!==id);
+  sv('wmp_favs',favs);renderFavList();
+}
+function filterFavs(el){
+  favFilter=el.dataset.v;
+  document.querySelectorAll('#favFilterChips .check-chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  renderFavList();
+}
+function renderFavList(){
+  const favs=getFavs();
+  const filtered=favFilter==='all'?favs:favs.filter(f=>f.cat===favFilter||f.cat==='any');
+  const container=document.getElementById('favList');
+  if(!filtered.length){
+    container.innerHTML=`<div class="empty-state"><div>⭐</div><div style="font-family:'Fredoka One',cursive;font-size:1.1rem;margin-bottom:6px;">No favorites yet</div><div style="font-size:0.88rem;">Add meals you love above — then swap them in from any meal slot using the ⭐ button</div></div>`;
+    return;
+  }
+  const catLabels={breakfast:'Breakfast',lunch:'Lunch',dinner:'Dinner',any:'Any'};
+  const catClasses={breakfast:'cat-breakfast',lunch:'cat-lunch',dinner:'cat-dinner',any:'cat-any'};
+  container.innerHTML=`<div class="fav-list">${filtered.map(f=>`
+    <div class="fav-item">
+      <div class="fav-item-info">
+        <div class="fav-item-name">${esc(f.name)}</div>
+        <span class="cat-badge ${catClasses[f.cat]||'cat-any'}">${catLabels[f.cat]||'Any'}</span>
+        ${f.notes?`<div class="fav-item-notes">${esc(f.notes)}</div>`:''}
+      </div>
+      <div class="fav-item-actions">
+        <button class="btn-green" style="padding:6px 12px;font-size:0.8rem;" onclick="deleteFav(${f.id})">Remove</button>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+// ═══════════════════════════════════════════════════
+// PREP DAY
+// ═══════════════════════════════════════════════════
+function buildPrepPlan(){
+  const D=getMeals();const names=[];
+  DAYS.forEach(day=>MEALS.forEach(meal=>{if(!isSkipped(D,day,meal)&&D[`${day}|${meal}`])names.push(D[`${day}|${meal}`].toLowerCase());}));
+  if(!names.length){toast('Plan some meals first!');return;}
+  const combined=names.join(' ');
+  let tasks=PREP_TASKS.filter(pt=>pt.trigger.some(t=>combined.includes(t)));
+  if(tasks.length<3){tasks.push(...PREP_TASKS.filter(pt=>!tasks.includes(pt)).slice(0,4));}
+  const html=tasks.slice(0,9).map((t,i)=>`
+    <div class="prep-item">
+      <div class="prep-num">${i+1}</div>
+      <div><strong style="font-size:0.9rem;">${t.task}</strong>
+        <div class="prep-meta">⏱️ ${t.time} · Helps with: ${t.helps}</div>
+      </div>
+    </div>`).join('');
+  document.getElementById('prepState').innerHTML=`<button class="btn-pink" onclick="buildPrepPlan()">🔄 Regenerate</button>`;
+  const list=document.getElementById('prepList');list.innerHTML=html;list.classList.remove('hidden');
+}
+
+// ═══════════════════════════════════════════════════
+// PROFILE
+// ═══════════════════════════════════════════════════
+function loadProfileUI(){
+  const p=getProf();
+  if(p.house)document.getElementById('pHouse').value=p.house;
+  if(p.time)document.getElementById('pTime').value=p.time;
+  if(p.skill)document.getElementById('pSkill').value=p.skill;
+  if(p.budget)document.getElementById('pBudget').value=p.budget;
+  if(p.avoid)document.getElementById('pAvoid').value=p.avoid;
+  (p.skipDefaults||[]).forEach(v=>{const c=document.querySelector(`#skipDefaultChips [data-v="${v}"]`);if(c)c.classList.add('on');});
+  (p.diet||[]).forEach(v=>{const c=document.querySelector(`#dietChips [data-v="${v}"]`);if(c)c.classList.add('on');});
+  (p.cuisines||[]).forEach(v=>{const c=document.querySelector(`#cuisineChips [data-v="${v}"]`);if(c)c.classList.add('on');});
+}
+function saveProfile(){
+  const p={
+    house:document.getElementById('pHouse').value,
+    time:document.getElementById('pTime').value,
+    skill:document.getElementById('pSkill').value,
+    budget:document.getElementById('pBudget').value,
+    avoid:document.getElementById('pAvoid').value,
+    skipDefaults:[...document.querySelectorAll('#skipDefaultChips .check-chip.on')].map(c=>c.dataset.v),
+    diet:[...document.querySelectorAll('#dietChips .check-chip.on')].map(c=>c.dataset.v),
+    cuisines:[...document.querySelectorAll('#cuisineChips .check-chip.on')].map(c=>c.dataset.v),
+  };
+  sv('wmp_profile',p);
+  const el=document.getElementById('profSaved');el.classList.remove('hidden');setTimeout(()=>el.classList.add('hidden'),2500);
+}
+function tog(el){el.classList.toggle('on');}
+
+// RECIPE MODAL
+function openRecipeModal(k){
+  const D=getMeals();activeRecipeKey=k;
+  document.getElementById('rModalMeal').value=D[k]||'(no meal entered yet)';
+  document.getElementById('rModalUrl').value=D[k+'|url']||'';
+  document.getElementById('recipeModal').classList.add('open');
+}
+function saveRecipe(){const D=getMeals();D[activeRecipeKey+'|url']=document.getElementById('rModalUrl').value.trim();setMeals(D);closeRecipeModal();buildGrid();}
+function closeRecipeModal(){document.getElementById('recipeModal').classList.remove('open');}
+
+// ═══════════════════════════════════════════════════
+// RECIPE PREVIEW MODAL
+// ═══════════════════════════════════════════════════
+let previewActiveKey = null;
+
+function openPreviewModal(mealName, slotKey){
+  const entry = DB.find(m=>m.n===mealName);
+  if(!entry) return;
+  previewActiveKey = slotKey;
+
+  document.getElementById('previewTitle').textContent = mealName;
+
+  // Diet tags
+  const tagColors = {'vegetarian':'#A6D76A','vegan':'#A6D76A','gluten-free':'#F4C542','dairy-free':'#F4C542','low-carb':'#FF69B4','quick':'#2E7D73'};
+  const tagLabels = {'vegetarian':'🥦 Vegetarian','vegan':'🌱 Vegan','gluten-free':'🌾 GF','dairy-free':'🥛 DF','low-carb':'🥩 Low-Carb'};
+  const timeLabel = entry.time==='quick'?'⚡ Quick (under 30 min)':entry.time==='medium'?'⏱️ Medium (30–60 min)':'🕐 Takes a while (60+ min)';
+  const timeBg = entry.time==='quick'?'#2E7D73':entry.time==='medium'?'#F4C542':'#F27C38';
+  const timeText = entry.time==='medium'?'#1A1A1A':'#fff';
+  let tagsHtml = `<span style="background:${timeBg};color:${timeText};font-size:0.68rem;font-weight:700;padding:3px 9px;border-radius:12px;">${timeLabel}</span>`;
+  if(entry.nocook) tagsHtml += `<span style="background:#FF69B4;color:#fff;font-size:0.68rem;font-weight:700;padding:3px 9px;border-radius:12px;">🧊 No-Cook</span>`;
+  (entry.diet||[]).forEach(d=>{if(tagLabels[d]) tagsHtml+=`<span style="background:${tagColors[d]||'#eee'};color:#1A1A1A;font-size:0.68rem;font-weight:700;padding:3px 9px;border-radius:12px;">${tagLabels[d]}</span>`;});
+  document.getElementById('previewDietTags').innerHTML = tagsHtml;
+
+  // Ingredients
+  let ingHtml = '';
+  Object.entries(entry.ing||{}).forEach(([sec,items])=>{
+    ingHtml += `<div style="margin-bottom:8px;"><div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);margin-bottom:3px;">${sec}</div>`;
+    ingHtml += items.map(i=>`<div style="font-size:0.85rem;padding:2px 0;border-bottom:1px solid rgba(166,215,106,0.2);">• ${i}</div>`).join('');
+    ingHtml += '</div>';
+  });
+  document.getElementById('previewIngredients').innerHTML = ingHtml;
+
+  // Steps
+  const stepsHtml = (entry.steps||[]).map(s=>`<li style="font-size:0.85rem;margin-bottom:8px;line-height:1.5;">${s}</li>`).join('');
+  document.getElementById('previewSteps').innerHTML = stepsHtml;
+
+  // Use button label
+  document.getElementById('previewUseBtn').textContent = slotKey ? '+ Use This Meal' : 'Close';
+
+  document.getElementById('previewModal').classList.add('open');
+}
+
+function closePreviewModal(){
+  document.getElementById('previewModal').classList.remove('open');
+  previewActiveKey = null;
+}
+
+function usePreviewMeal(){
+  const title = document.getElementById('previewTitle').textContent;
+  if(previewActiveKey){
+    const D=getMeals(); D[previewActiveKey]=title; setMeals(D); buildGrid();
+    toast('✅ '+title+' added to your planner!');
+  }
+  closePreviewModal();
+}
+
+// TOAST
+function toast(msg){
+  let t=document.getElementById('_toast');
+  if(!t){t=document.createElement('div');t.id='_toast';t.style.cssText='position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#1A1A1A;color:#fff;padding:10px 20px;border-radius:20px;font-family:\'DM Sans\',sans-serif;font-size:0.88rem;z-index:999;transition:opacity 0.3s;pointer-events:none;';document.body.appendChild(t);}
+  t.textContent=msg;t.style.opacity='1';clearTimeout(t._t);t._t=setTimeout(()=>t.style.opacity='0',2400);
+}
+
+// INIT
+buildGrid();buildThemes();updateWeekLabel();
+</script>
+</body>
+</html>
